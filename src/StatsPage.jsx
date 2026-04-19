@@ -257,8 +257,9 @@ function hexToRgba(hex, a) {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-function KpiTier({ label, muted, children, isMobile }) {
+function KpiTier({ label, muted, children, isMobile, cols }) {
   const kids = Array.isArray(children) ? children : [children];
+  const desktopCols = cols ?? 3;
   return (
     <div>
       <div style={{
@@ -266,7 +267,7 @@ function KpiTier({ label, muted, children, isMobile }) {
         fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase",
         color: "var(--muted, #7a6fa0)", marginBottom: 10,
       }}>{label}</div>
-      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : `repeat(${desktopCols}, 1fr)`, gap: 12 }}>
         {kids.map((child, i) => (
           <div key={i} style={isMobile && i === 0 ? { gridColumn: "1 / -1" } : {}}>
             {child}
@@ -789,12 +790,11 @@ export default function StatsPage({ isMobile }) {
           <KpiCard label="Total Burned"    value={kpis.totalBurns?.toLocaleString()}   loading={kpiLoading} accent="#ef4444" delta={deltaBurned} />
           <KpiCard label="Net Supply"      value={kpis.netSupply?.toLocaleString()}    loading={kpiLoading} accent="#34d399" delta={deltaNet} />
         </KpiTier>
-        <KpiTier label="Demand" isMobile={isMobile}>
+        <KpiTier label="Demand" isMobile={isMobile} cols={4}>
           <KpiCard label="ETH Spent"       value={kpis.totalEth != null ? Number(kpis.totalEth).toFixed(2) + " Ξ" : undefined} loading={kpiLoading} accent="#fbbf24" />
           <KpiCard label="Unique Minters"  value={kpis.uniquePlayers?.toLocaleString()} loading={kpiLoading} accent="#f472b6" />
           <KpiCard label="Ranked Players"  value={rankedPlayers?.toLocaleString()} loading={rankedPlayersLoading} accent="#38bdf8" />
           <KpiCard label="Games (24h)"     value={games24h?.toLocaleString()}     loading={rankedPlayersLoading} accent="#34d399" />
-          <KpiCard label="Active Now"      value={activeNow?.toLocaleString()}    loading={rankedPlayersLoading} accent="#a78bfa" />
         </KpiTier>
         <KpiTier label="Ratios" muted isMobile={isMobile}>
           <KpiCard label="Burn Rate"          value={burnRate}          loading={kpiLoading} accent="#f87171" small />
