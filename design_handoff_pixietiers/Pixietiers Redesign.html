@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pixietiers · Mid-fi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0810;
+    --bg-2: #120e1c;
+    --bg-3: #1a1429;
+    --card: #140f20;
+    --card-2: #1c1530;
+    --line: #2a2140;
+    --line-2: #3a2d55;
+    --ink: #ece7ff;
+    --muted: #7a6fa0;
+    --muted-2: #4d4468;
+
+    --purple: #9d6cff;
+    --purple-2: #7c3cff;
+    --pink: #ff57a8;
+    --red: #ff4d5e;
+    --orange: #ff8c3d;
+    --yellow: #ffd04d;
+    --green: #4cd694;
+    --blue: #4da0ff;
+    --cyan: #5de8ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--bg); color: var(--ink); font-family: 'Space Grotesk', sans-serif; }
+  body {
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(157,108,255,.14), transparent 60%),
+      radial-gradient(800px 500px at 10% 110%, rgba(255,87,168,.08), transparent 60%),
+      radial-gradient(900px 500px at 100% 100%, rgba(77,160,255,.06), transparent 60%),
+      var(--bg);
+  }
+
+  /* Top nav */
+  .top { padding: 26px 32px 0; display:flex; flex-direction:column; align-items:center; gap: 18px; }
+  .logo {
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 56px; letter-spacing: 6px;
+    color: var(--ink);
+    text-shadow:
+      0 0 8px rgba(157,108,255,.9),
+      0 0 28px rgba(157,108,255,.55),
+      0 0 60px rgba(124,60,255,.45);
+    position: relative;
+  }
+  .logo::after{
+    content:"";
+    position:absolute; left:50%; transform:translateX(-50%);
+    bottom:-10px; width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(157,108,255,.8), transparent);
+    filter: blur(.5px);
+  }
+
+  .pill-nav {
+    display:flex; gap: 4px; padding: 6px;
+    background: rgba(20,15,32,.7);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    backdrop-filter: blur(12px);
+  }
+  .pill-nav button {
+    font-family: 'Space Grotesk'; font-weight: 600;
+    font-size: 13px; letter-spacing: .3px;
+    padding: 9px 20px; color: var(--muted);
+    background: transparent; border: none; border-radius: 999px;
+    cursor: pointer; transition: all .15s ease;
+  }
+  .pill-nav button:hover { color: var(--ink); }
+  .pill-nav button.active {
+    background: linear-gradient(180deg, #a878ff 0%, #7c3cff 100%);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(157,108,255,.6), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2.4px; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ========= ARENA EDITOR ========= */
+  .arena-header {
+    display:flex; justify-content: space-between; align-items: flex-end;
+    padding: 10px 4px 18px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  .arena-header h1 {
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 38px; letter-spacing: 1px;
+    margin: 6px 0 0; color: var(--ink);
+    text-shadow: 0 0 16px rgba(157,108,255,.35);
+  }
+  .arena-header .meta { display:flex; gap: 22px; font-size: 12px; color: var(--muted); font-family:'JetBrains Mono', monospace; }
+  .arena-header .meta b { color: var(--ink); font-family: 'Space Grotesk'; font-weight:600; font-size:13px; }
+
+  .arena-actions { display:flex; gap:8px; align-items:center; }
+  .btn {
+    font-family: 'Space Grotesk'; font-weight: 600; font-size: 13px;
+    padding: 9px 16px; border-radius: 10px;
+    border: 1px solid var(--line-2);
+    background: rgba(28,21,48,.6);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .btn:hover { border-color: var(--purple); background: rgba(40,30,70,.7); }
+  .btn.primary {
+    background: linear-gradient(180deg, #a878ff, #7c3cff);
+    border-color: transparent;
+    box-shadow: 0 0 24px rgba(157,108,255,.45), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.ghost { background: transparent; }
+  .btn.icon { padding: 8px 10px; }
+
+  /* Arena tier rows */
+  .arena-stage { display:flex; flex-direction:column; gap: 12px; }
+
+  .arena-tier {
+    display:grid; grid-template-columns: 160px 1fr 48px;
+    gap: 16px;
+    background: linear-gradient(180deg, rgba(28,21,48,.55), rgba(20,15,32,.8));
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arena-tier::before {
+    content:""; position:absolute; inset: 0;
+    background: radial-gradient(500px 120px at 0% 50%, var(--glow, rgba(157,108,255,.2)), transparent 60%);
+    pointer-events: none;
+  }
+  .tier-letter {
+    position: relative;
+    display:flex; align-items:center; justify-content:center;
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 110px; line-height: 1;
+    border-radius: 12px;
+    align-self: stretch;
+    background: var(--tier-bg, linear-gradient(180deg, rgba(157,108,255,.25), rgba(124,60,255,.15)));
+    color: var(--tier-fg, #fff);
+    border: 1px solid var(--tier-border, rgba(157,108,255,.45));
+    text-shadow: 0 0 30px var(--tier-glow, rgba(157,108,255,.8));
+    letter-spacing: 2px;
+  }
+  .tier-s { --tier-bg: linear-gradient(180deg, rgba(255,87,168,.35), rgba(157,108,255,.25)); --tier-border: rgba(255,87,168,.55); --tier-glow: rgba(255,87,168,.9); --glow: rgba(255,87,168,.22); }
+  .tier-a { --tier-bg: linear-gradient(180deg, rgba(255,140,61,.35), rgba(255,77,94,.2)); --tier-border: rgba(255,140,61,.5); --tier-glow: rgba(255,140,61,.85); --glow: rgba(255,140,61,.18); }
+  .tier-b { --tier-bg: linear-gradient(180deg, rgba(255,208,77,.32), rgba(255,140,61,.15)); --tier-border: rgba(255,208,77,.5); --tier-glow: rgba(255,208,77,.85); --glow: rgba(255,208,77,.15); }
+  .tier-c { --tier-bg: linear-gradient(180deg, rgba(76,214,148,.28), rgba(77,160,255,.15)); --tier-border: rgba(76,214,148,.5); --tier-glow: rgba(76,214,148,.8); --glow: rgba(76,214,148,.15); }
+  .tier-f { --tier-bg: linear-gradient(180deg, rgba(77,160,255,.25), rgba(93,232,255,.15)); --tier-border: rgba(77,160,255,.5); --tier-glow: rgba(77,160,255,.85); --glow: rgba(77,160,255,.15); }
+
+  .tier-well {
+    display:flex; flex-wrap: wrap; gap: 10px;
+    align-items:center; padding: 6px 8px;
+    position: relative;
+    min-height: 128px;
+  }
+  .tier-well .hint {
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted-2); letter-spacing: 1.2px; text-transform: uppercase;
+  }
+
+  .piece {
+    width: 100px; height: 100px;
+    border-radius: 14px;
+    background: #0f0a1c;
+    border: 1px solid var(--line-2);
+    display:flex; align-items:center; justify-content:center;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+    transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+    flex-shrink: 0;
+  }
+  .piece .art {
+    position: absolute; inset: 0;
+    background:
+      var(--piece-art, radial-gradient(60% 60% at 50% 40%, rgba(157,108,255,.5), rgba(20,15,32,0) 70%)),
+      linear-gradient(180deg, #241a3d 0%, #0f0a1c 100%);
+  }
+  .piece .art::after {
+    /* pixel grain overlay — hints at pixel-art NFT pieces */
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.08) 3px 4px),
+      repeating-linear-gradient(90deg, transparent 0 3px, rgba(0,0,0,.08) 3px 4px);
+    mix-blend-mode: overlay;
+  }
+  .piece:hover {
+    transform: translateY(-3px);
+    border-color: rgba(157,108,255,.7);
+    box-shadow: 0 10px 28px rgba(0,0,0,.4), 0 0 24px rgba(157,108,255,.35);
+    z-index: 2;
+  }
+  .piece .badge {
+    position:absolute; top: 5px; left: 5px;
+    font-family:'JetBrains Mono', monospace; font-size: 8px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(0,0,0,.55);
+    color: var(--ink);
+    letter-spacing: .5px;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+  }
+  .piece .rarity {
+    position:absolute; top: 5px; right: 5px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--rarity, var(--muted));
+    box-shadow: 0 0 8px var(--rarity, var(--muted));
+    z-index: 2;
+  }
+  .piece .label {
+    position:absolute; left: 0; right: 0; bottom: 0;
+    padding: 18px 6px 5px;
+    text-align: center;
+    font-family:'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1px;
+    color: var(--ink); text-transform: uppercase;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.85) 60%);
+    z-index: 2;
+  }
+  .piece.sm { width: 64px; height: 64px; border-radius: 10px; }
+  .piece.sm .label, .piece.sm .badge { display:none; }
+
+  /* Generative piece variants — each represents a distinct custom NFT */
+  .p1  { --piece-art: radial-gradient(50% 50% at 50% 35%, #ff6cc7 0%, #8a2db8 50%, #1b0e30 100%); --rarity: var(--pink); }
+  .p2  { --piece-art: radial-gradient(50% 50% at 40% 50%, #ffd04d 0%, #ff6b3d 45%, #2a0e1c 100%); --rarity: var(--orange); }
+  .p3  { --piece-art: radial-gradient(60% 60% at 50% 50%, #5de8ff 0%, #3a6fb8 50%, #0e1030 100%); --rarity: var(--blue); }
+  .p4  { --piece-art: radial-gradient(55% 55% at 50% 45%, #4cd694 0%, #2a7a60 50%, #0d1e1a 100%); --rarity: var(--green); }
+  .p5  { --piece-art: conic-gradient(from 210deg at 50% 50%, #9d6cff, #ff57a8, #ff8c3d, #9d6cff); --rarity: var(--pink); }
+  .p6  { --piece-art: linear-gradient(135deg, #1a0e2f 0%, #9d6cff 50%, #1a0e2f 100%); --rarity: var(--purple); }
+  .p7  { --piece-art: radial-gradient(35% 35% at 30% 30%, #fff 0%, transparent 70%), linear-gradient(180deg, #3a1a60, #0a0414); --rarity: var(--muted); }
+  .p8  { --piece-art: radial-gradient(65% 65% at 70% 70%, #ff4d5e 0%, #6b1020 50%, #1a0810 100%); --rarity: var(--red); }
+  .p9  { --piece-art: conic-gradient(from 0deg at 50% 50%, #4cd694, #5de8ff, #9d6cff, #4cd694); --rarity: var(--green); }
+  .p10 { --piece-art: repeating-linear-gradient(45deg, #7c3cff 0 8px, #ff57a8 8px 16px), linear-gradient(180deg, #1a0e2f, #0a0414); --rarity: var(--purple); }
+  .p11 { --piece-art: radial-gradient(40% 40% at 50% 50%, #ffd04d 0%, #7c5a00 50%, #1a1204 100%); --rarity: var(--yellow); }
+  .p12 { --piece-art: radial-gradient(50% 50% at 50% 50%, #ff8c3d 0%, #d13ca0 70%, #1b0e30 100%); --rarity: var(--orange); }
+  .p13 { --piece-art: linear-gradient(180deg, #0a0414 0%, #0a0414 55%, #9d6cff 55%, #ff57a8 100%); --rarity: var(--pink); }
+  .p14 { --piece-art: radial-gradient(30% 30% at 60% 30%, #fff 0%, transparent 65%), radial-gradient(80% 80% at 50% 80%, #ff4d5e 0%, #0a0414 80%); --rarity: var(--red); }
+  .p15 { --piece-art: conic-gradient(from 90deg at 50% 50%, #1a0e2f, #5de8ff 20%, #1a0e2f 40%, #5de8ff 60%, #1a0e2f 80%); --rarity: var(--blue); }
+
+  /* Skeleton shimmer for loading state */
+  .piece.loading .art {
+    background: linear-gradient(90deg, #1a1430 0%, #2a1e4a 50%, #1a1430 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite linear;
+  }
+  @keyframes shimmer { 0%{background-position: 100% 0;} 100%{background-position: -100% 0;} }
+
+  .tier-menu {
+    display:flex; flex-direction: column; align-items:center; justify-content:center;
+    gap: 6px;
+  }
+  .tier-menu button {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid var(--line-2); background: rgba(20,15,32,.6);
+    color: var(--muted); cursor: pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 14px;
+  }
+  .tier-menu button:hover { color: var(--ink); border-color: var(--purple); }
+
+  /* Bench (dock) */
+  .bench {
+    margin-top: 18px;
+    background: linear-gradient(180deg, rgba(28,21,48,.7), rgba(12,9,22,.9));
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .bench-head { display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px; }
+  .bench-title { display:flex; align-items:center; gap: 10px; }
+  .bench-title h3 { margin:0; font-family: 'Cinzel'; font-weight: 800; font-size: 18px; letter-spacing: 1px; color: var(--ink); }
+  .bench-title .count {
+    font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+    padding: 3px 8px; border: 1px solid var(--line-2); border-radius: 999px;
+  }
+  .bench-filters { display:flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-family:'Space Grotesk'; font-size: 11px; font-weight: 600;
+    padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px;
+    color: var(--muted); background: transparent; cursor: pointer;
+  }
+  .chip.on { color: var(--ink); border-color: var(--purple); background: rgba(157,108,255,.15); box-shadow: inset 0 0 16px rgba(157,108,255,.2); }
+
+  .bench-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; max-height: 280px; overflow-y: auto; padding: 4px 4px 8px; }
+  .bench-grid::-webkit-scrollbar { width: 8px; } .bench-grid::-webkit-scrollbar-track { background: transparent; } .bench-grid::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+  .bench-grid .piece { width: 100%; aspect-ratio: 1; height: auto; border-radius: 12px; }
+  .bench-grid .piece .label { font-size: 8px; padding: 14px 4px 4px; }
+
+  .kbd {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    padding: 2px 6px; border: 1px solid var(--line-2);
+    border-radius: 5px; color: var(--muted); background: rgba(0,0,0,.3);
+  }
+
+  /* ========= ARENA SHARE ========= */
+  .share-hero {
+    text-align: center;
+    padding: 40px 20px 30px;
+  }
+  .share-hero .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+  .share-hero h1 {
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 68px; line-height: 1.02; letter-spacing: 1.5px;
+    margin: 0 0 14px;
+    background: linear-gradient(180deg, #fff 0%, #c9b6ff 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 40px rgba(157,108,255,.3);
+  }
+  .share-hero .byline {
+    font-family:'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--muted); letter-spacing: 1.2px;
+  }
+  .share-hero .byline b { color: var(--ink); font-weight: 600; }
+
+  .share-ribbon {
+    display:grid; grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 860px; margin: 28px auto 36px;
+  }
+  .ribbon-cell {
+    background: rgba(20,15,32,.7);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+  }
+  .ribbon-cell .rl {
+    font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 38px; line-height: 1;
+    margin-bottom: 6px;
+  }
+  .ribbon-cell .rn { font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase; }
+  .ribbon-s .rl { color: var(--pink); text-shadow: 0 0 20px rgba(255,87,168,.6); }
+  .ribbon-a .rl { color: var(--orange); text-shadow: 0 0 20px rgba(255,140,61,.6); }
+  .ribbon-b .rl { color: var(--yellow); text-shadow: 0 0 20px rgba(255,208,77,.6); }
+  .ribbon-c .rl { color: var(--green); text-shadow: 0 0 20px rgba(76,214,148,.6); }
+  .ribbon-f .rl { color: var(--blue); text-shadow: 0 0 20px rgba(77,160,255,.6); }
+
+  .share-card-stack {
+    max-width: 860px; margin: 0 auto;
+    display:flex; flex-direction: column; gap: 14px;
+  }
+  .share-card-stack .arena-tier { grid-template-columns: 130px 1fr 90px; }
+  .share-card-stack .tier-letter { font-size: 84px; }
+  .share-card-stack .piece { width: 78px; height: 78px; font-size: 40px; }
+  .share-card-stack .piece::after { display:none; }
+  .tier-verdict {
+    font-family:'Space Grotesk'; font-size: 14px; color: var(--muted);
+    font-style: italic; max-width: 260px; align-self:center;
+    line-height: 1.4;
+  }
+
+  .share-actions {
+    display:flex; justify-content:center; gap: 10px;
+    padding: 36px 0 20px;
+    border-top: 1px solid var(--line);
+    margin-top: 40px;
+  }
+
+  /* ========= BROADCAST STATS ========= */
+  .stats-toolbar {
+    display:flex; justify-content: space-between; align-items:center;
+    padding: 4px 0 20px;
+    margin-bottom: 8px;
+  }
+  .stats-toolbar .range {
+    display:flex; gap: 4px; padding: 4px;
+    border: 1px solid var(--line-2); border-radius: 999px;
+    background: rgba(20,15,32,.6);
+  }
+  .stats-toolbar .range button {
+    font-family:'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1px;
+    padding: 6px 14px; border-radius: 999px; border: none;
+    background: transparent; color: var(--muted); cursor: pointer;
+  }
+  .stats-toolbar .range button.on {
+    background: linear-gradient(180deg, #a878ff, #7c3cff);
+    color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+  }
+
+  .section-eyebrow {
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--muted);
+    margin: 26px 0 10px;
+  }
+
+  .stat-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .metric-card {
+    position: relative;
+    background: linear-gradient(180deg, var(--mc-bg-top, rgba(28,21,48,.7)), rgba(12,9,22,.95));
+    border: 1px solid var(--mc-border, var(--line));
+    border-radius: 16px;
+    padding: 18px 20px;
+    overflow: hidden;
+    min-height: 130px;
+  }
+  .metric-card::before {
+    content:""; position:absolute; inset: -1px;
+    background: radial-gradient(240px 140px at 20% 80%, var(--mc-glow, rgba(157,108,255,.18)), transparent 70%);
+    pointer-events: none;
+  }
+  .metric-card .ml {
+    position: relative;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .metric-card .mv {
+    position: relative;
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 44px; line-height: 1;
+    letter-spacing: -1px;
+    color: var(--mc-fg, #fff);
+    text-shadow: 0 0 24px var(--mc-shadow, rgba(157,108,255,.6));
+  }
+  .metric-card .md {
+    position: relative;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; margin-top: 12px;
+    color: var(--mc-delta, var(--green));
+    letter-spacing: 1px;
+  }
+  .metric-card .md .small { color: var(--muted); margin-left: 6px; }
+
+  .mc-purple { --mc-bg-top: rgba(90,50,170,.35); --mc-border: rgba(157,108,255,.35); --mc-glow: rgba(157,108,255,.35); --mc-fg: #c9aaff; --mc-shadow: rgba(157,108,255,.75); }
+  .mc-red    { --mc-bg-top: rgba(170,50,70,.32); --mc-border: rgba(255,77,94,.35);  --mc-glow: rgba(255,77,94,.28);  --mc-fg: #ff8a9a; --mc-shadow: rgba(255,77,94,.7); --mc-delta: #ff8a9a; }
+  .mc-green  { --mc-bg-top: rgba(40,120,80,.32); --mc-border: rgba(76,214,148,.35); --mc-glow: rgba(76,214,148,.28); --mc-fg: #7cf0b4; --mc-shadow: rgba(76,214,148,.7); }
+  .mc-yellow { --mc-bg-top: rgba(150,100,30,.35); --mc-border: rgba(255,208,77,.35); --mc-glow: rgba(255,208,77,.22); --mc-fg: #ffe597; --mc-shadow: rgba(255,208,77,.7); }
+  .mc-pink   { --mc-bg-top: rgba(160,50,110,.35); --mc-border: rgba(255,87,168,.35); --mc-glow: rgba(255,87,168,.28); --mc-fg: #ffa3cf; --mc-shadow: rgba(255,87,168,.7); }
+  .mc-blue   { --mc-bg-top: rgba(40,80,170,.35); --mc-border: rgba(77,160,255,.35); --mc-glow: rgba(77,160,255,.28); --mc-fg: #9bc5ff; --mc-shadow: rgba(77,160,255,.75); }
+
+  /* Chart */
+  .chart-card {
+    background: linear-gradient(180deg, rgba(28,21,48,.55), rgba(12,9,22,.85));
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 22px 14px;
+  }
+  .chart-card h4 {
+    margin: 0 0 16px;
+    font-family:'Space Grotesk'; font-weight: 700; font-size: 14px;
+    letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .chart-line {
+    position: relative;
+    height: 260px;
+    border-bottom: 1px solid var(--line-2);
+    border-left: 1px solid var(--line-2);
+  }
+  .chart-line .grid {
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 39px, rgba(58,45,85,.35) 39px 40px),
+      repeating-linear-gradient(90deg, transparent 0 59px, rgba(58,45,85,.2) 59px 60px);
+    pointer-events: none;
+  }
+  .chart-line svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .chart-line .yaxis {
+    position:absolute; left:-36px; top:0; bottom:0;
+    display:flex; flex-direction: column; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+  }
+  .chart-line .xaxis {
+    display:flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+    padding: 6px 4px 0;
+    letter-spacing: .5px;
+  }
+  .chart-legend {
+    display:flex; gap: 18px; justify-content: center; margin-top: 10px;
+    font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: .5px;
+  }
+  .chart-legend span { display: inline-flex; align-items:center; gap: 6px; }
+  .chart-legend .sw { width: 14px; height: 3px; border-radius: 2px; display:inline-block; }
+
+  /* Bar charts */
+  .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .chart-bar {
+    display:flex; align-items: flex-end;
+    gap: 8px; height: 200px;
+    border-bottom: 1px solid var(--line-2);
+    padding: 10px 4px 0;
+  }
+  .chart-bar .barcol {
+    flex: 1; display:flex; flex-direction:column; justify-content: flex-end;
+    gap: 2px; min-width: 12px; height: 100%;
+    position: relative;
+  }
+  .bar {
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, var(--bar-top, var(--purple)), var(--bar-bot, var(--purple-2)));
+    box-shadow: 0 0 18px var(--bar-glow, rgba(157,108,255,.5));
+  }
+  .bar.pink  { --bar-top: var(--pink);   --bar-bot: #b23a79; --bar-glow: rgba(255,87,168,.5); }
+  .bar.green { --bar-top: var(--green);  --bar-bot: #27855c; --bar-glow: rgba(76,214,148,.5); }
+  .bar.blue  { --bar-top: var(--blue);   --bar-bot: #2762a8; --bar-glow: rgba(77,160,255,.5); }
+
+  .xaxis-labels {
+    display:flex; justify-content: space-between;
+    padding: 6px 4px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+  }
+
+  /* Footer note */
+  .lastsync {
+    display:flex; justify-content: space-between; align-items:center;
+    margin-top: 22px; padding-top: 16px;
+    border-top: 1px dashed var(--line-2);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+  }
+  .lastsync .dot {
+    display:inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 10px var(--green);
+    margin-right: 8px; animation: pulse 2s infinite ease-in-out;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+  /* Tweaks */
+  .tweaks {
+    position: fixed; right: 20px; bottom: 20px;
+    background: rgba(20,15,32,.95);
+    border: 1px solid var(--line-2);
+    padding: 14px 16px;
+    border-radius: 12px;
+    display: none; z-index: 100; min-width: 220px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 30px rgba(157,108,255,.2);
+  }
+  .tweaks.open { display: block; }
+  .tweaks h4 {
+    margin: 0 0 10px; font-family: 'Cinzel', serif; font-weight: 800;
+    font-size: 13px; letter-spacing: 2px; color: var(--ink);
+  }
+  .tweaks .row { display:flex; flex-direction:column; gap: 4px; }
+  .tweaks label {
+    font-family: 'Space Grotesk'; font-size: 13px; color: var(--ink);
+    cursor:pointer; display:flex; align-items:center; gap: 8px;
+  }
+  .tweaks .ptag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); margin: 10px 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">PIXIE</div>
+  <div class="pill-nav" id="nav">
+    <button class="active" data-screen="editor">Editor</button>
+    <button data-screen="share">Tier List</button>
+    <button data-screen="stats">Stats</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- =================== EDITOR (Arena) =================== -->
+  <section class="screen active" data-screen="editor">
+    <div class="arena-header">
+      <div>
+        <div class="eyebrow">Tier list · from collection <b style="color:var(--ink)">Pixie Gen 1</b> · autosaved 4s ago</div>
+        <h1>Ranking Every Chess Piece</h1>
+        <div class="meta" style="margin-top:10px;">
+          <span>Ranked <b>11</b></span>
+          <span>Custom pieces <b>47</b></span>
+          <span>Bench <b>24</b></span>
+          <span>Tiers <b>5</b></span>
+          <span>Visibility <b>Unlisted</b></span>
+        </div>
+      </div>
+      <div class="arena-actions">
+        <button class="btn ghost">Presentation</button>
+        <button class="btn">Export</button>
+        <button class="btn primary">Publish →</button>
+      </div>
+    </div>
+
+    <div class="arena-stage">
+      <div class="arena-tier tier-s">
+        <div class="tier-letter">S</div>
+        <div class="tier-well">
+          <div class="piece p1" title="King"><div class="art"></div><div class="badge">#037</div><div class="rarity"></div><div class="label">King</div></div>
+          <div class="piece p2" title="Queen"><div class="art"></div><div class="badge">#074</div><div class="rarity"></div><div class="label">Queen</div></div>
+          <div class="piece p3" title="Queen •"><div class="art"></div><div class="badge">#122</div><div class="rarity"></div><div class="label">Queen •</div></div>
+        </div>
+        <div class="tier-menu"><button>↑</button><button>⋮</button></div>
+      </div>
+
+      <div class="arena-tier tier-a">
+        <div class="tier-letter">A</div>
+        <div class="tier-well">
+          <div class="piece p4" title="Rook"><div class="art"></div><div class="badge">#148</div><div class="rarity"></div><div class="label">Rook</div></div>
+          <div class="piece p5" title="Rook •"><div class="art"></div><div class="badge">#196</div><div class="rarity"></div><div class="label">Rook •</div></div>
+          <div class="piece p6" title="Bishop"><div class="art"></div><div class="badge">#222</div><div class="rarity"></div><div class="label">Bishop</div></div>
+        </div>
+        <div class="tier-menu"><button>↑</button><button>⋮</button></div>
+      </div>
+
+      <div class="arena-tier tier-b">
+        <div class="tier-letter">B</div>
+        <div class="tier-well">
+          <div class="piece p7" title="Bishop •"><div class="art"></div><div class="badge">#270</div><div class="rarity"></div><div class="label">Bishop •</div></div>
+          <div class="piece p8" title="Knight"><div class="art"></div><div class="badge">#296</div><div class="rarity"></div><div class="label">Knight</div></div>
+        </div>
+        <div class="tier-menu"><button>↑</button><button>⋮</button></div>
+      </div>
+
+      <div class="arena-tier tier-c">
+        <div class="tier-letter">C</div>
+        <div class="tier-well">
+          <div class="piece p9" title="Knight •"><div class="art"></div><div class="badge">#344</div><div class="rarity"></div><div class="label">Knight •</div></div>
+          <div class="piece p10" title="Pawn"><div class="art"></div><div class="badge">#370</div><div class="rarity"></div><div class="label">Pawn</div></div>
+          <div class="piece p11" title="Pawn •"><div class="art"></div><div class="badge">#418</div><div class="rarity"></div><div class="label">Pawn •</div></div>
+        </div>
+        <div class="tier-menu"><button>↑</button><button>⋮</button></div>
+      </div>
+
+      <div class="arena-tier tier-f">
+        <div class="tier-letter">F</div>
+        <div class="tier-well">
+          <span class="hint">— drop what you don't respect —</span>
+        </div>
+        <div class="tier-menu"><button>↑</button><button>⋮</button></div>
+      </div>
+    </div>
+
+    <div class="bench">
+      <div class="bench-head">
+        <div class="bench-title">
+          <h3>BENCH</h3>
+          <span class="count">24 unranked · 47 total</span>
+        </div>
+        <div class="bench-filters">
+          <span class="chip on">All sets</span>
+          <span class="chip">Pixie Gen 1</span>
+          <span class="chip">Pixie Gen 2</span>
+          <span class="chip">Community</span>
+          <span class="chip">My mints</span>
+          <span class="chip">+ Import</span>
+        </div>
+      </div>
+      <div class="bench-grid">
+        <div class="piece p1" title="Flame King"><div class="art"></div><div class="badge">#0240</div><div class="rarity"></div><div class="label">Flame King</div></div>
+        <div class="piece p2" title="Crystal Queen"><div class="art"></div><div class="badge">#0257</div><div class="rarity"></div><div class="label">Crystal Queen</div></div>
+        <div class="piece p3" title="Void Rook"><div class="art"></div><div class="badge">#0274</div><div class="rarity"></div><div class="label">Void Rook</div></div>
+        <div class="piece p4" title="Ember Bishop"><div class="art"></div><div class="badge">#0291</div><div class="rarity"></div><div class="label">Ember Bishop</div></div>
+        <div class="piece p5" title="Ion Knight"><div class="art"></div><div class="badge">#0308</div><div class="rarity"></div><div class="label">Ion Knight</div></div>
+        <div class="piece p6" title="Pixel Pawn"><div class="art"></div><div class="badge">#0325</div><div class="rarity"></div><div class="label">Pixel Pawn</div></div>
+        <div class="piece p7" title="Ghost King"><div class="art"></div><div class="badge">#0342</div><div class="rarity"></div><div class="label">Ghost King</div></div>
+        <div class="piece p8" title="Prism Queen"><div class="art"></div><div class="badge">#0359</div><div class="rarity"></div><div class="label">Prism Queen</div></div>
+        <div class="piece p9" title="Rust Rook"><div class="art"></div><div class="badge">#0376</div><div class="rarity"></div><div class="label">Rust Rook</div></div>
+        <div class="piece p10" title="Silk Bishop"><div class="art"></div><div class="badge">#0393</div><div class="rarity"></div><div class="label">Silk Bishop</div></div>
+        <div class="piece p11" title="Neon Knight"><div class="art"></div><div class="badge">#0410</div><div class="rarity"></div><div class="label">Neon Knight</div></div>
+        <div class="piece p12" title="Bit Pawn"><div class="art"></div><div class="badge">#0427</div><div class="rarity"></div><div class="label">Bit Pawn</div></div>
+        <div class="piece p13" title="Ash King"><div class="art"></div><div class="badge">#0444</div><div class="rarity"></div><div class="label">Ash King</div></div>
+        <div class="piece p14" title="Halo Queen"><div class="art"></div><div class="badge">#0461</div><div class="rarity"></div><div class="label">Halo Queen</div></div>
+        <div class="piece p15" title="Mono Rook"><div class="art"></div><div class="badge">#0478</div><div class="rarity"></div><div class="label">Mono Rook</div></div>
+        <div class="piece p1" title="Toxic Bishop"><div class="art"></div><div class="badge">#0495</div><div class="rarity"></div><div class="label">Toxic Bishop</div></div>
+        <div class="piece p2" title="Solar Knight"><div class="art"></div><div class="badge">#0512</div><div class="rarity"></div><div class="label">Solar Knight</div></div>
+        <div class="piece p3" title="Chrome Pawn"><div class="art"></div><div class="badge">#0529</div><div class="rarity"></div><div class="label">Chrome Pawn</div></div>
+        <div class="piece p4" title="Plasma King"><div class="art"></div><div class="badge">#0546</div><div class="rarity"></div><div class="label">Plasma King</div></div>
+        <div class="piece p5" title="Echo Queen"><div class="art"></div><div class="badge">#0563</div><div class="rarity"></div><div class="label">Echo Queen</div></div>
+        <div class="piece p6" title="Jade Rook"><div class="art"></div><div class="badge">#0580</div><div class="rarity"></div><div class="label">Jade Rook</div></div>
+        <div class="piece p7" title="Bone Bishop"><div class="art"></div><div class="badge">#0597</div><div class="rarity"></div><div class="label">Bone Bishop</div></div>
+        <div class="piece p8" title="Fang Knight"><div class="art"></div><div class="badge">#0614</div><div class="rarity"></div><div class="label">Fang Knight</div></div>
+        <div class="piece p9" title="Cube Pawn"><div class="art"></div><div class="badge">#0631</div><div class="rarity"></div><div class="label">Cube Pawn</div></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+        <div style="display:flex; gap:8px;">
+          <button class="btn">+ Upload image</button>
+          <button class="btn ghost">Browse templates</button>
+        </div>
+        <div style="font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 1px;">
+          SHORTCUTS · <span class="kbd">1–5</span> tier · <span class="kbd">↑↓</span> move · <span class="kbd">⌫</span> bench
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== TIER LIST / SHARE (Arena) =================== -->
+  <section class="screen" data-screen="share">
+    <div class="share-hero">
+      <div class="kicker">PIXIETIERS · PIXIE GEN 1 · 47 CUSTOM PIECES</div>
+      <h1>Ranking Every<br/>Chess Piece</h1>
+      <div class="byline">by <b>@grandmaster_greg</b> · 312 votes · 1,284 views</div>
+    </div>
+
+    <div class="share-ribbon">
+      <div class="ribbon-cell ribbon-s"><div class="rl">S</div><div class="rn">3 items</div></div>
+      <div class="ribbon-cell ribbon-a"><div class="rl">A</div><div class="rn">3 items</div></div>
+      <div class="ribbon-cell ribbon-b"><div class="rl">B</div><div class="rn">2 items</div></div>
+      <div class="ribbon-cell ribbon-c"><div class="rl">C</div><div class="rn">3 items</div></div>
+      <div class="ribbon-cell ribbon-f"><div class="rl">F</div><div class="rn">0 items</div></div>
+    </div>
+
+    <div class="share-card-stack">
+      <div class="arena-tier tier-s">
+        <div class="tier-letter">S</div>
+        <div class="tier-well">
+          <div class="piece p2" title="King"><div class="art"></div><div class="badge">#074</div><div class="rarity"></div><div class="label">King</div></div>
+          <div class="piece p3" title="Queen"><div class="art"></div><div class="badge">#111</div><div class="rarity"></div><div class="label">Queen</div></div>
+          <div class="piece p4" title="Queen •"><div class="art"></div><div class="badge">#159</div><div class="rarity"></div><div class="label">Queen •</div></div>
+        </div>
+        <div class="tier-verdict">“The non-negotiables. Without them, there's no game.”</div>
+      </div>
+      <div class="arena-tier tier-a">
+        <div class="tier-letter">A</div>
+        <div class="tier-well">
+          <div class="piece p5" title="Rook"><div class="art"></div><div class="badge">#185</div><div class="rarity"></div><div class="label">Rook</div></div>
+          <div class="piece p6" title="Rook •"><div class="art"></div><div class="badge">#233</div><div class="rarity"></div><div class="label">Rook •</div></div>
+          <div class="piece p7" title="Bishop"><div class="art"></div><div class="badge">#259</div><div class="rarity"></div><div class="label">Bishop</div></div>
+        </div>
+        <div class="tier-verdict">“Solid. Brings you to the endgame alive.”</div>
+      </div>
+      <div class="arena-tier tier-b">
+        <div class="tier-letter">B</div>
+        <div class="tier-well">
+          <div class="piece p8" title="Bishop •"><div class="art"></div><div class="badge">#307</div><div class="rarity"></div><div class="label">Bishop •</div></div>
+          <div class="piece p9" title="Knight"><div class="art"></div><div class="badge">#333</div><div class="rarity"></div><div class="label">Knight</div></div>
+        </div>
+        <div class="tier-verdict">“Situational. Useful, not exciting.”</div>
+      </div>
+      <div class="arena-tier tier-c">
+        <div class="tier-letter">C</div>
+        <div class="tier-well">
+          <div class="piece p10" title="Knight •"><div class="art"></div><div class="badge">#381</div><div class="rarity"></div><div class="label">Knight •</div></div>
+          <div class="piece p11" title="Pawn"><div class="art"></div><div class="badge">#407</div><div class="rarity"></div><div class="label">Pawn</div></div>
+          <div class="piece p12" title="Pawn •"><div class="art"></div><div class="badge">#455</div><div class="rarity"></div><div class="label">Pawn •</div></div>
+        </div>
+        <div class="tier-verdict">“The pawns of the tier list, literally.”</div>
+      </div>
+    </div>
+
+    <div class="share-actions">
+      <button class="btn primary">Remix this list</button>
+      <button class="btn">👍 Agree · 214</button>
+      <button class="btn">👎 Disagree · 98</button>
+      <button class="btn ghost">Share</button>
+      <button class="btn ghost">Export PNG</button>
+    </div>
+  </section>
+
+  <!-- =================== STATS (Broadcast) =================== -->
+  <section class="screen" data-screen="stats">
+    <div class="stats-toolbar">
+      <div>
+        <div class="eyebrow">Pixie · on-chain</div>
+        <h1 style="font-family:'Cinzel',serif; font-weight:800; font-size:34px; margin:6px 0 0; letter-spacing:1px;">Network Stats</h1>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="range">
+          <button>24H</button>
+          <button class="on">7D</button>
+          <button>30D</button>
+          <button>All</button>
+        </div>
+        <button class="btn icon" title="Refresh">↻ Refresh data</button>
+      </div>
+    </div>
+
+    <div class="section-eyebrow">Supply</div>
+    <div class="stat-grid">
+      <div class="metric-card mc-purple">
+        <div class="ml">Total Minted</div>
+        <div class="mv">5,361</div>
+        <div class="md">▲ +82 <span class="small">24H</span></div>
+      </div>
+      <div class="metric-card mc-red">
+        <div class="ml">Total Burned</div>
+        <div class="mv">1,116</div>
+        <div class="md">▲ +31 <span class="small">24H</span></div>
+      </div>
+      <div class="metric-card mc-green">
+        <div class="ml">Net Supply</div>
+        <div class="mv">4,245</div>
+        <div class="md">▲ +51 <span class="small">24H</span></div>
+      </div>
+    </div>
+
+    <div class="section-eyebrow">Demand</div>
+    <div class="stat-grid">
+      <div class="metric-card mc-yellow">
+        <div class="ml">ETH Spent</div>
+        <div class="mv">76.45 Ξ</div>
+        <div class="md">▲ +1.24 Ξ <span class="small">24H</span></div>
+      </div>
+      <div class="metric-card mc-pink">
+        <div class="ml">Unique Minters</div>
+        <div class="mv">436</div>
+        <div class="md">▲ +9 <span class="small">24H</span></div>
+      </div>
+      <div class="metric-card mc-blue">
+        <div class="ml">Ranked Players</div>
+        <div class="mv">1,065</div>
+        <div class="md">▲ +22 <span class="small">24H</span></div>
+      </div>
+    </div>
+
+    <div class="section-eyebrow">Ratios</div>
+    <div class="stat-grid">
+      <div class="metric-card mc-red">
+        <div class="ml">Burn Rate</div>
+        <div class="mv">20.8%</div>
+        <div class="md">▲ +0.4% <span class="small">24H</span></div>
+      </div>
+      <div class="metric-card mc-yellow">
+        <div class="ml">Avg ETH / Mint</div>
+        <div class="mv">0.0143 Ξ</div>
+        <div class="md">▼ −0.0002 <span class="small">24H</span></div>
+      </div>
+      <div class="metric-card mc-blue">
+        <div class="ml">Avg Mints / Minter</div>
+        <div class="mv">12.3</div>
+        <div class="md">▲ +0.2 <span class="small">24H</span></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-top: 24px;">
+      <h4>Net Supply over Time</h4>
+      <div class="chart-line">
+        <div class="grid"></div>
+        <div class="yaxis">
+          <span>6,000</span><span>4,500</span><span>3,000</span><span>1,500</span><span>0</span>
+        </div>
+        <svg viewBox="0 0 600 240" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gGreen" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#4cd694" stop-opacity=".35"/>
+              <stop offset="100%" stop-color="#4cd694" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Total minted (green) -->
+          <path d="M0,140 L40,120 L80,100 L120,86 L160,76 L200,68 L240,60 L280,54 L320,50 L360,46 L400,44 L440,42 L480,40 L520,38 L560,36 L600,34 L600,240 L0,240 Z" fill="url(#gGreen)"/>
+          <polyline fill="none" stroke="#4cd694" stroke-width="2.5" points="0,140 40,120 80,100 120,86 160,76 200,68 240,60 280,54 320,50 360,46 400,44 440,42 480,40 520,38 560,36 600,34" style="filter: drop-shadow(0 0 6px #4cd694);"/>
+          <!-- Net supply (blue dashed) -->
+          <polyline fill="none" stroke="#4da0ff" stroke-width="2.2" stroke-dasharray="5 4" points="0,170 40,160 80,152 120,144 160,138 200,132 240,128 280,124 320,120 360,118 400,116 440,114 480,112 520,110 560,109 600,108" style="filter: drop-shadow(0 0 6px #4da0ff);"/>
+          <!-- Burnt (red) -->
+          <polyline fill="none" stroke="#ff4d5e" stroke-width="2" points="0,220 40,215 80,210 120,206 160,204 200,203 240,202 280,201 320,200 360,200 400,199 440,199 480,198 520,198 560,197 600,197" style="filter: drop-shadow(0 0 5px #ff4d5e);"/>
+        </svg>
+      </div>
+      <div class="xaxis">
+        <span>Apr 2</span><span>Apr 4</span><span>Apr 6</span><span>Apr 8</span><span>Apr 10</span><span>Apr 12</span><span>Apr 14</span><span>Apr 16</span><span>Apr 17</span>
+      </div>
+      <div class="chart-legend">
+        <span><span class="sw" style="background:#ff4d5e;"></span>Burnt</span>
+        <span><span class="sw" style="background:#4da0ff;"></span>Net Supply</span>
+        <span><span class="sw" style="background:#4cd694;"></span>Total Minted</span>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="chart-card">
+        <h4>Daily Burns</h4>
+        <div class="chart-bar">
+          <div class="barcol"><div class="bar" style="height:30%"></div></div>
+          <div class="barcol"><div class="bar" style="height:88%"></div></div>
+          <div class="barcol"><div class="bar" style="height:85%"></div></div>
+          <div class="barcol"><div class="bar" style="height:40%"></div></div>
+          <div class="barcol"><div class="bar" style="height:18%"></div></div>
+          <div class="barcol"><div class="bar" style="height:20%"></div></div>
+          <div class="barcol"><div class="bar" style="height:24%"></div></div>
+          <div class="barcol"><div class="bar" style="height:30%"></div></div>
+          <div class="barcol"><div class="bar" style="height:44%"></div></div>
+          <div class="barcol"><div class="bar" style="height:36%"></div></div>
+          <div class="barcol"><div class="bar" style="height:22%"></div></div>
+          <div class="barcol"><div class="bar" style="height:20%"></div></div>
+          <div class="barcol"><div class="bar" style="height:18%"></div></div>
+          <div class="barcol"><div class="bar" style="height:22%"></div></div>
+        </div>
+        <div class="xaxis-labels">
+          <span>Apr 2</span><span>Apr 5</span><span>Apr 8</span><span>Apr 11</span><span>Apr 14</span>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>New vs Returning Minters</h4>
+        <div class="chart-bar">
+          <div class="barcol"><div class="bar green" style="height:90%"></div><div class="bar blue" style="height:20%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:55%"></div><div class="bar blue" style="height:30%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:48%"></div><div class="bar blue" style="height:35%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:35%"></div><div class="bar blue" style="height:40%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:30%"></div><div class="bar blue" style="height:45%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:25%"></div><div class="bar blue" style="height:40%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:20%"></div><div class="bar blue" style="height:32%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:18%"></div><div class="bar blue" style="height:25%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:16%"></div><div class="bar blue" style="height:22%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:14%"></div><div class="bar blue" style="height:20%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:12%"></div><div class="bar blue" style="height:18%"></div></div>
+          <div class="barcol"><div class="bar green" style="height:10%"></div><div class="bar blue" style="height:16%"></div></div>
+        </div>
+        <div class="xaxis-labels">
+          <span>Apr 2</span><span>Apr 5</span><span>Apr 8</span><span>Apr 11</span><span>Apr 14</span>
+        </div>
+        <div class="chart-legend" style="margin-top: 8px;">
+          <span><span class="sw" style="background:#4cd694;"></span>New</span>
+          <span><span class="sw" style="background:#4da0ff;"></span>Returning</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lastsync">
+      <span><span class="dot"></span> Live · synced from contract 0x4a3…e91d</span>
+      <span>Last refresh · 2s ago</span>
+    </div>
+  </section>
+
+</main>
+
+<!-- Tweaks -->
+<div class="tweaks" id="tweaks">
+  <h4>TWEAKS</h4>
+  <div class="ptag">screen</div>
+  <div class="row">
+    <label><input type="radio" name="scr" value="editor" checked/> Editor</label>
+    <label><input type="radio" name="scr" value="share"/> Tier list</label>
+    <label><input type="radio" name="scr" value="stats"/> Stats</label>
+  </div>
+  <div class="ptag">accent hue</div>
+  <div class="row">
+    <label><input type="radio" name="accent" value="purple" checked/> Purple (default)</label>
+    <label><input type="radio" name="accent" value="pink"/> Pink</label>
+    <label><input type="radio" name="accent" value="cyan"/> Cyan</label>
+  </div>
+  <div class="ptag">density</div>
+  <div class="row">
+    <label><input type="radio" name="density" value="comfy" checked/> Comfortable</label>
+    <label><input type="radio" name="density" value="compact"/> Compact</label>
+  </div>
+</div>
+
+<script>
+(function(){
+  const navButtons = document.querySelectorAll('#nav button');
+  function setScreen(screen){
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.screen === screen));
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === screen));
+    const tw = document.querySelector('#tweaks input[name="scr"][value="'+screen+'"]');
+    if (tw) tw.checked = true;
+    try { localStorage.setItem('pixie-screen', screen); } catch(e){}
+  }
+  navButtons.forEach(b => b.addEventListener('click', () => setScreen(b.dataset.screen)));
+  document.querySelectorAll('#tweaks input[name="scr"]').forEach(r => r.addEventListener('change', () => setScreen(r.value)));
+
+  // Restore
+  try {
+    const saved = localStorage.getItem('pixie-screen');
+    if (saved) setScreen(saved);
+  } catch(e){}
+
+  // Accent hue (tweak)
+  const accents = {
+    purple: { a: '#9d6cff', b: '#7c3cff', glow: 'rgba(157,108,255,' },
+    pink:   { a: '#ff6cc7', b: '#d13ca0', glow: 'rgba(255,108,199,' },
+    cyan:   { a: '#5de8ff', b: '#2aa8d4', glow: 'rgba(93,232,255,' },
+  };
+  document.querySelectorAll('#tweaks input[name="accent"]').forEach(r => r.addEventListener('change', () => {
+    const c = accents[r.value]; if (!c) return;
+    document.documentElement.style.setProperty('--purple', c.a);
+    document.documentElement.style.setProperty('--purple-2', c.b);
+  }));
+
+  document.querySelectorAll('#tweaks input[name="density"]').forEach(r => r.addEventListener('change', () => {
+    document.body.style.setProperty('--density', r.value);
+    if (r.value === 'compact') {
+      document.querySelectorAll('.arena-tier').forEach(e => e.style.padding = '10px');
+      document.querySelectorAll('.tier-letter').forEach(e => e.style.fontSize = '84px');
+      document.querySelectorAll('.piece:not(.sm)').forEach(e => { e.style.width = '72px'; e.style.height = '72px'; });
+    } else {
+      document.querySelectorAll('.arena-tier').forEach(e => e.style.padding = '');
+      document.querySelectorAll('.tier-letter').forEach(e => e.style.fontSize = '');
+      document.querySelectorAll('.piece:not(.sm)').forEach(e => { e.style.width = ''; e.style.height = ''; });
+    }
+  }));
+
+  // Edit mode bridge
+  window.addEventListener('message', (e) => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode')   document.getElementById('tweaks').classList.add('open');
+    if (d.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('open');
+  });
+  window.parent.postMessage({type: '__edit_mode_available'}, '*');
+})();
+</script>
+</body>
+</html>

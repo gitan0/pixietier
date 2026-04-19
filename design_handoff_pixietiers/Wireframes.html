@@ -1,0 +1,1214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pixietiers · Wireframes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;700&family=Kalam:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --paper: #f6f3ec;
+    --paper-2: #efeadf;
+    --line: #1a1a1a;
+    --muted: #8a867c;
+    --accent: #d94f2a;
+    --accent-2: #2e6b4f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background: var(--paper); color: var(--ink); font-family: 'Kalam', 'Caveat', sans-serif; }
+  body { min-height:100vh; }
+
+  /* Top toolbar */
+  .toolbar {
+    position: sticky; top:0; z-index: 50;
+    background: var(--paper);
+    border-bottom: 2px solid var(--ink);
+    padding: 14px 28px;
+    display:flex; align-items:center; gap:20px;
+  }
+  .brand { font-family:'Caveat', cursive; font-size: 30px; font-weight:700; letter-spacing: 0.5px; display:flex; align-items:center; gap:8px;}
+  .brand .dot { width:14px; height:14px; background: var(--accent); border-radius:50%; border: 2px solid var(--ink); display:inline-block;}
+  .sub { font-family:'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.4px; color: var(--muted); }
+
+  .tabs { display:flex; gap:6px; margin-left:auto; }
+  .tab {
+    font-family: 'Kalam', sans-serif;
+    font-size: 15px; font-weight: 700;
+    padding: 8px 14px; background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 20px 22px 18px 24px / 22px 18px 24px 20px;
+    cursor:pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: transform .08s ease;
+  }
+  .tab:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+  .tab.active { background: var(--ink); color: var(--paper); }
+  .screen-switch { display:flex; gap:4px; margin-left:12px; padding: 4px; border:2px solid var(--ink); border-radius:24px; background: var(--paper-2); }
+  .screen-switch button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    padding: 6px 12px; background: transparent; border: none; border-radius: 18px; cursor:pointer;
+  }
+  .screen-switch button.active { background: var(--ink); color: var(--paper); }
+
+  /* Page */
+  main { padding: 28px; max-width: 1400px; margin: 0 auto; }
+  .preamble {
+    border: 2px dashed var(--ink);
+    background: var(--paper-2);
+    padding: 18px 22px;
+    border-radius: 12px 18px 10px 16px / 14px 10px 18px 12px;
+    margin-bottom: 24px;
+    display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px;
+  }
+  .preamble h3 { font-family:'Caveat', cursive; font-size: 26px; margin: 0 0 6px; }
+  .preamble p  { font-size: 15px; margin: 0; line-height: 1.45; }
+  .preamble .tag { display:inline-block; font-family:'JetBrains Mono', monospace; font-size:10px; padding:3px 8px; border:1.5px solid var(--ink); border-radius: 20px; margin-right:4px; margin-bottom:4px; text-transform:uppercase; letter-spacing:1px; }
+
+  .direction { display: none; }
+  .direction.active { display: block; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* --- Sketchy primitives --- */
+  .box {
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    border-radius: 10px 14px 8px 12px / 12px 8px 14px 10px;
+    position: relative;
+  }
+  .box.dashed { border-style: dashed; background: transparent; }
+  .box.filled { background: var(--paper-2); }
+  .box.ink    { background: var(--ink); color: var(--paper); }
+
+  .label {
+    font-family:'Caveat', cursive;
+    font-size: 20px; font-weight: 700;
+    letter-spacing: .2px;
+  }
+  .annot {
+    position:absolute;
+    font-family:'Caveat', cursive;
+    font-size: 18px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .annot::before {
+    content:"↳";
+    margin-right:4px;
+    color: var(--accent);
+  }
+  .ptag { font-family:'JetBrains Mono', monospace; font-size: 10px; text-transform:uppercase; letter-spacing:1.2px; color: var(--muted); }
+
+  /* Chess piece placeholder */
+  .piece {
+    width: 56px; height: 56px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    background: var(--paper);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-family:'Caveat', cursive; font-size: 30px; font-weight:700;
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: grab;
+    flex-shrink: 0;
+  }
+  .piece.sm { width: 36px; height: 36px; font-size: 20px; box-shadow: 1.5px 1.5px 0 var(--ink); }
+  .piece.lg { width: 76px; height: 76px; font-size: 42px; box-shadow: 3px 3px 0 var(--ink); }
+  .piece.dark { background: var(--ink); color: var(--paper); }
+
+  /* Tier row */
+  .tier-row {
+    display:grid; grid-template-columns: 80px 1fr auto; gap: 10px;
+    align-items:center;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    padding: 10px;
+    min-height: 90px;
+  }
+  .tier-letter {
+    font-family:'Caveat', cursive;
+    font-size: 56px; font-weight:700;
+    text-align:center;
+    border-right: 2px dashed var(--ink);
+    padding-right: 6px;
+    line-height: 1;
+  }
+  .tier-well {
+    display:flex; flex-wrap: wrap; gap: 10px; min-height: 70px;
+    align-items:center;
+  }
+  .tier-controls { display:flex; flex-direction:column; gap:6px; }
+  .tier-controls button {
+    font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700;
+    padding: 3px 8px; border: 1.5px solid var(--ink); background: var(--paper);
+    border-radius: 14px; cursor: pointer;
+  }
+
+  /* Scribble underline */
+  .scribble {
+    position:relative; display:inline-block;
+  }
+  .scribble::after{
+    content:"";
+    position:absolute; left:-2px; right:-4px; bottom:-6px; height:6px;
+    background: repeating-linear-gradient(-2deg, var(--accent) 0 8px, transparent 8px 14px);
+    opacity: .8;
+  }
+
+  /* --- Direction 1: Broadcast --- */
+  .d1-editor {
+    display:grid; grid-template-columns: 260px 1fr 300px;
+    gap: 18px;
+    min-height: 780px;
+  }
+  .d1-bench { padding: 16px; }
+  .d1-bench h4 { margin:0 0 10px; font-family:'Caveat', cursive; font-size:26px; }
+  .d1-bench .search { border: 2px dashed var(--ink); border-radius: 999px; padding: 8px 14px; font-family:'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .d1-bench .filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 14px; }
+  .chip { font-family:'JetBrains Mono', monospace; font-size: 10px; padding: 4px 10px; border: 1.5px solid var(--ink); border-radius: 12px; text-transform:uppercase; letter-spacing:1px;}
+  .chip.on { background: var(--ink); color: var(--paper); }
+  .piece-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  .d1-stage { padding: 16px; display:flex; flex-direction:column; gap: 12px; }
+  .d1-stage .stage-head {
+    display:flex; justify-content: space-between; align-items:center;
+    border-bottom: 2px dashed var(--ink); padding-bottom: 10px;
+  }
+  .d1-stage .title-input {
+    font-family:'Caveat', cursive; font-size: 40px; font-weight: 700;
+    border: none; background: transparent; outline: none; width: 100%;
+  }
+  .d1-stage .hud {
+    display:flex; gap: 14px;
+    font-family:'JetBrains Mono', monospace; font-size:11px;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px;
+  }
+  .d1-stage .hud span b { color: var(--ink); }
+
+  .d1-rail { padding: 16px; display:flex; flex-direction:column; gap: 14px; }
+  .d1-rail h4 { margin:0; font-family:'Caveat', cursive; font-size:24px; }
+  .meta-row { display:flex; justify-content:space-between; font-family:'JetBrains Mono', monospace; font-size:11px; padding: 6px 0; border-bottom: 1px dashed var(--ink);}
+  .meta-row b { font-family:'Kalam'; font-size: 14px; }
+
+  .big-btn {
+    font-family:'Kalam'; font-weight:700; font-size: 18px;
+    padding: 12px 16px; border: 2px solid var(--ink);
+    background: var(--accent); color: var(--paper);
+    border-radius: 16px 22px 14px 20px / 18px 14px 22px 16px;
+    cursor:pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .big-btn.ghost { background: var(--paper); color: var(--ink); }
+
+  /* --- Direction 1: Share page (broadcast recap) --- */
+  .d1-share {
+    display:grid; grid-template-columns: 1fr 340px;
+    gap: 18px; min-height: 780px;
+  }
+  .d1-hero {
+    padding: 28px; display:flex; flex-direction:column; gap: 14px;
+    background: var(--paper-2);
+  }
+  .d1-hero .kicker { font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color: var(--muted); }
+  .d1-hero h1 { font-family:'Caveat', cursive; font-size: 60px; margin:0; line-height: .95; }
+  .d1-hero .byline { font-family:'JetBrains Mono', monospace; font-size:12px; color: var(--muted); }
+  .d1-hero .scoreboard { display:grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-top: 14px; }
+  .score-cell { padding: 10px; text-align:center; }
+  .score-cell .letter { font-family:'Caveat', cursive; font-size: 36px; font-weight:700; }
+  .score-cell .count  { font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--muted); }
+
+  /* --- Direction 2: Arena --- */
+  .d2-editor {
+    display:grid; grid-template-rows: auto 1fr auto;
+    gap: 16px; min-height: 780px;
+  }
+  .d2-header { display:flex; justify-content:space-between; align-items:center; padding: 14px 20px; }
+  .d2-header .title { font-family:'Caveat', cursive; font-size: 46px; line-height:1; }
+  .d2-stage {
+    display:grid; grid-template-columns: 1fr;
+    gap: 12px; padding: 8px;
+  }
+  .d2-tier {
+    display:grid; grid-template-columns: 160px 1fr 60px; gap: 16px; align-items:center;
+    border: 2px solid var(--ink); background: var(--paper);
+    padding: 10px; position: relative;
+    min-height: 110px;
+  }
+  .d2-tier .big-letter {
+    font-family:'Caveat', cursive;
+    font-size: 120px; font-weight:700; line-height: .85;
+    text-align:center;
+    background: var(--paper-2);
+    border: 2px solid var(--ink);
+    border-radius: 18px;
+    align-self: stretch;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .d2-tier .big-letter.accent { background: var(--accent); color: var(--paper); }
+  .d2-tier .big-letter.accent2 { background: var(--accent-2); color: var(--paper); }
+  .d2-tier .big-letter.dark { background: var(--ink); color: var(--paper); }
+
+  .d2-dock {
+    border-top: 2px dashed var(--ink);
+    padding: 16px;
+    display:flex; gap: 10px; align-items:center; flex-wrap:wrap;
+    background: var(--paper-2);
+  }
+  .d2-dock .dock-label { font-family:'Caveat', cursive; font-size: 24px; margin-right: 8px; }
+
+  /* --- Direction 2: Share (vertical card) --- */
+  .d2-share {
+    max-width: 720px; margin: 0 auto;
+    padding: 24px;
+    background: var(--paper-2);
+    border: 2px solid var(--ink);
+  }
+  .d2-share h1 { font-family:'Caveat', cursive; font-size: 56px; margin: 0 0 4px; line-height: 1; }
+  .d2-share .byline { font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 18px; }
+  .d2-share .tier-card {
+    display:grid; grid-template-columns: 100px 1fr; gap: 14px;
+    border: 2px solid var(--ink); background: var(--paper);
+    padding: 12px; margin-bottom: 10px;
+    min-height: 100px;
+  }
+  .d2-share .tier-card .big-letter {
+    font-family:'Caveat', cursive; font-size: 72px; font-weight:700; line-height:.9;
+    display:flex; align-items:center; justify-content:center;
+    border-right: 2px dashed var(--ink);
+  }
+  .d2-share .verdict { font-family:'Kalam'; font-size: 14px; font-style: italic; color: var(--muted); margin-top: 6px; }
+  .d2-share .actions { display:flex; gap: 10px; margin-top: 18px; justify-content: center; }
+
+  /* --- Direction 3: Codex --- */
+  .d3-editor {
+    display:grid; grid-template-columns: 1fr 360px;
+    gap: 20px; min-height: 780px;
+  }
+  .d3-main { padding: 20px 24px; }
+  .d3-main .breadcrumb { font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--muted); text-transform:uppercase; letter-spacing: 1.4px; margin-bottom: 8px; }
+  .d3-main h1 { font-family:'Caveat', cursive; font-size: 48px; margin: 0 0 4px; line-height: 1; }
+  .d3-main .lede { font-family:'Kalam'; font-size: 16px; color: var(--muted); margin: 0 0 22px; max-width: 580px; }
+  .d3-main .tier-list { display:flex; flex-direction:column; gap: 6px; }
+
+  .d3-codex {
+    background: var(--paper-2);
+    padding: 20px;
+    border-left: 2px solid var(--ink);
+  }
+  .d3-codex h3 { font-family:'Caveat', cursive; font-size: 24px; margin: 0 0 4px; }
+  .d3-codex .section-tag { font-family:'JetBrains Mono', monospace; font-size:10px; color: var(--muted); text-transform:uppercase; letter-spacing: 1.4px; margin-bottom: 14px; }
+  .d3-codex .note {
+    border: 2px dashed var(--ink); padding: 12px; background: var(--paper); margin-bottom: 12px;
+  }
+  .d3-codex .note .head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 6px;}
+  .d3-codex .note .head b { font-family:'Kalam'; font-weight:700; }
+  .d3-codex .note .head .rank { font-family:'Caveat', cursive; font-size:22px; }
+  .d3-codex .note p { margin:0; font-size:13px; line-height:1.45; color: #444; }
+
+  /* --- Direction 3: Share (column) --- */
+  .d3-share { max-width: 880px; margin: 0 auto; padding: 24px; }
+  .d3-share .masthead {
+    border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 12px 0; display:flex; justify-content: space-between; align-items:center;
+    font-family:'JetBrains Mono', monospace; font-size:11px; text-transform:uppercase; letter-spacing:1.6px;
+  }
+  .d3-share h1 { font-family:'Caveat', cursive; font-size: 72px; margin: 24px 0 6px; line-height:.95; max-width: 720px; }
+  .d3-share .dek { font-family:'Kalam'; font-size: 18px; color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+  .d3-share .cols { column-count: 2; column-gap: 32px; font-family:'Kalam'; font-size: 14px; line-height: 1.55; }
+  .d3-share .cols p { margin: 0 0 14px; }
+  .d3-share .verdict-strip {
+    display:grid; grid-template-columns: repeat(5, 1fr);
+    border: 2px solid var(--ink); margin: 28px 0;
+  }
+  .d3-share .verdict-strip .cell {
+    padding: 14px 10px; text-align:center; border-right: 1px dashed var(--ink);
+  }
+  .d3-share .verdict-strip .cell:last-child { border-right:none; }
+  .d3-share .verdict-strip .l { font-family:'Caveat', cursive; font-size: 46px; font-weight:700; line-height:1; }
+  .d3-share .verdict-strip .n { font-family:'JetBrains Mono', monospace; font-size:10px; color: var(--muted); letter-spacing:1.2px; text-transform:uppercase; }
+
+  /* Utility */
+  .row { display:flex; gap: 8px; align-items:center; flex-wrap:wrap; }
+  .spacer { height: 12px; }
+  .faded { color: var(--muted); }
+  .num { font-family:'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1.2px; text-transform: uppercase;}
+
+  /* Annotation callouts in margins */
+  .callout {
+    font-family:'Caveat', cursive;
+    font-size: 16px;
+    color: var(--accent);
+    padding: 4px 10px;
+    border: 1.5px dashed var(--accent);
+    border-radius: 20px;
+    display:inline-block;
+    margin-bottom: 8px;
+  }
+  .callout.green { color: var(--accent-2); border-color: var(--accent-2); }
+
+  .caption-strip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    display:flex; gap: 20px; padding: 14px 20px;
+    border-bottom: 2px dashed var(--ink);
+    margin-bottom: 16px;
+  }
+  .caption-strip b { color: var(--ink); font-family: 'Kalam'; }
+
+  /* Tweaks panel */
+  .tweaks {
+    position: fixed; right: 20px; bottom: 20px;
+    background: var(--paper); border: 2px solid var(--ink);
+    padding: 14px 16px;
+    border-radius: 14px 20px 12px 18px / 16px 12px 20px 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+    display: none; z-index: 100; max-width: 280px;
+  }
+  .tweaks.open { display: block; }
+  .tweaks h4 { margin: 0 0 10px; font-family:'Caveat', cursive; font-size: 22px; }
+  .tweaks .opt { display:block; font-family:'Kalam'; font-size:14px; margin: 4px 0; cursor:pointer; }
+  .tweaks .opt input { margin-right: 6px; }
+
+  /* ====== STATS wireframe primitives (shared across directions) ====== */
+  .section-eyebrow {
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin: 22px 0 8px;
+  }
+  .stat-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stat-card {
+    border: 2px solid var(--ink);
+    border-radius: 14px 18px 12px 16px / 16px 12px 18px 14px;
+    padding: 16px; background: var(--paper);
+    position: relative; min-height: 120px;
+  }
+  .stat-card .stat-label {
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .stat-card .stat-value {
+    font-family:'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 42px; line-height: 1; letter-spacing: -0.5px;
+  }
+  .stat-card .stat-delta {
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 1px; margin-top: 10px;
+  }
+  .stat-card.purple { background: #f1ecff; }
+  .stat-card.red    { background: #ffe9e4; }
+  .stat-card.green  { background: #e4f5ea; }
+  .stat-card.yellow { background: #fff3d0; }
+  .stat-card.pink   { background: #ffe2ef; }
+  .stat-card.blue   { background: #e0ecff; }
+  .stat-card .glow-note {
+    position:absolute; right: 10px; top: 8px;
+    font-family:'Caveat', cursive; font-size:14px; color: var(--accent);
+  }
+
+  .chart-card {
+    border: 2px solid var(--ink); background: var(--paper);
+    padding: 16px; border-radius: 10px 16px 10px 14px / 14px 10px 16px 10px;
+  }
+  .chart-card h4 {
+    margin: 0 0 12px; font-family:'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .chart-line { height: 220px; position: relative; border-bottom: 1.5px solid var(--ink); border-left: 1.5px solid var(--ink); }
+  .chart-line svg { width: 100%; height: 100%; display:block; }
+  .chart-line .ylabel {
+    position:absolute; left: -28px; font-family:'JetBrains Mono',monospace;
+    font-size: 9px; color: var(--muted);
+  }
+  .chart-legend {
+    display:flex; gap: 16px; justify-content:center; margin-top: 10px;
+    font-family:'JetBrains Mono', monospace; font-size:11px; color: var(--muted);
+  }
+  .chart-legend .sw { display:inline-block; width:10px; height:2px; background: var(--ink); margin-right:5px; vertical-align: middle; }
+
+  .chart-bar {
+    height: 180px; display:flex; align-items: flex-end;
+    gap: 6px; padding: 10px 6px; border-bottom: 1.5px solid var(--ink);
+  }
+  .chart-bar .bar {
+    flex:1; background: var(--ink); position: relative;
+    border-top-left-radius: 3px; border-top-right-radius: 3px;
+    min-width: 10px;
+  }
+  .chart-bar .bar.alt { background: var(--accent); opacity: .85; }
+  .bar-labels {
+    display:flex; justify-content: space-between; gap: 6px;
+    font-family:'JetBrains Mono', monospace; font-size:9px; color: var(--muted);
+    padding: 4px 6px 0;
+  }
+
+  .stat-two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand"><span class="dot"></span> pixietiers <span class="sub">· wireframes v1</span></div>
+  <div class="tabs" id="dirTabs">
+    <button class="tab active" data-dir="d1">① Broadcast</button>
+    <button class="tab" data-dir="d2">② Arena</button>
+    <button class="tab" data-dir="d3">③ Codex</button>
+  </div>
+  <div class="screen-switch" id="screenSwitch">
+    <button class="active" data-screen="editor">Editor</button>
+    <button data-screen="share">Share page</button>
+    <button data-screen="stats">Stats</button>
+  </div>
+</div>
+
+<main>
+  <!-- Preamble / notes -->
+  <div class="preamble">
+    <div>
+      <h3>What this is</h3>
+      <p>Low-fi wireframes exploring 3 structural directions for the <b>tier-list editor</b>, <b>share page</b>, and <b>stats dashboard</b>. Final direction is <b>dark, cinematic, premium-gaming</b>, inspired by the pixiechess.xyz dashboard — these are grayscale on purpose so we're arguing about structure.</p>
+    </div>
+    <div>
+      <h3>How to read</h3>
+      <p>Circles = chess piece thumbnails. <span class="callout">orange pill</span> = design intention note. Dashed boxes = placeholder / upload zones. Use the tabs above to switch direction; Editor / Share toggle on the right.</p>
+    </div>
+    <div>
+      <h3>Next steps</h3>
+      <p>Pick a direction (or a mix). I'll render one as a mid-fi mock in the actual dark cinematic palette, with real chess piece artwork placeholders and motion notes for drag interactions.</p>
+    </div>
+  </div>
+
+  <!-- ============================== DIRECTION 1: BROADCAST ============================== -->
+  <section class="direction active" data-dir="d1">
+
+    <!-- D1 EDITOR -->
+    <div class="screen active" data-screen="editor">
+      <div class="caption-strip">
+        <span><b>DIRECTION 1</b> Broadcast</span>
+        <span>editor feels like a chess broadcast studio</span>
+        <span class="faded">three-column · bench / stage / match-card</span>
+      </div>
+
+      <div class="d1-editor">
+        <!-- LEFT: bench -->
+        <div class="box d1-bench">
+          <span class="callout">piece bench — search, filter, drag-to-tier</span>
+          <h4>Pieces</h4>
+          <div class="search">🔍 search pieces, openings, players…</div>
+          <div class="filters">
+            <span class="chip on">All</span>
+            <span class="chip">Pieces</span>
+            <span class="chip">Openings</span>
+            <span class="chip">Players</span>
+            <span class="chip">Sets</span>
+          </div>
+          <div class="piece-grid">
+            <div class="piece">♔</div><div class="piece dark">♚</div>
+            <div class="piece">♕</div><div class="piece dark">♛</div>
+            <div class="piece">♖</div><div class="piece dark">♜</div>
+            <div class="piece">♗</div><div class="piece dark">♝</div>
+            <div class="piece">♘</div><div class="piece dark">♞</div>
+            <div class="piece">♙</div><div class="piece dark">♟</div>
+          </div>
+          <div class="spacer"></div>
+          <div class="box dashed" style="padding:14px; text-align:center;">
+            <div class="ptag">upload your own</div>
+            <div style="font-family:'Caveat',cursive; font-size:22px;">+ drag images here</div>
+          </div>
+        </div>
+
+        <!-- CENTER: stage -->
+        <div class="box d1-stage">
+          <span class="callout">the stage — live tier rows, big inline title</span>
+          <div class="stage-head">
+            <div style="flex:1;">
+              <div class="ptag">untitled · autosaved 2s ago</div>
+              <input class="title-input" value="My Chess Opening Tier List" />
+            </div>
+            <div class="hud">
+              <span><b>12</b> ranked</span>
+              <span><b>04</b> unranked</span>
+              <span><b>5</b> tiers</span>
+            </div>
+          </div>
+
+          <!-- Tier rows -->
+          <div class="tier-row">
+            <div class="tier-letter">S</div>
+            <div class="tier-well">
+              <div class="piece">♔</div><div class="piece">♕</div><div class="piece dark">♛</div>
+            </div>
+            <div class="tier-controls"><button>↑</button><button>✎</button><button>×</button></div>
+          </div>
+          <div class="tier-row">
+            <div class="tier-letter">A</div>
+            <div class="tier-well">
+              <div class="piece">♖</div><div class="piece dark">♜</div><div class="piece">♗</div>
+            </div>
+            <div class="tier-controls"><button>↑</button><button>✎</button><button>×</button></div>
+          </div>
+          <div class="tier-row">
+            <div class="tier-letter">B</div>
+            <div class="tier-well">
+              <div class="piece dark">♝</div><div class="piece">♘</div>
+            </div>
+            <div class="tier-controls"><button>↑</button><button>✎</button><button>×</button></div>
+          </div>
+          <div class="tier-row">
+            <div class="tier-letter">C</div>
+            <div class="tier-well">
+              <div class="piece dark">♞</div><div class="piece">♙</div>
+            </div>
+            <div class="tier-controls"><button>↑</button><button>✎</button><button>×</button></div>
+          </div>
+          <div class="tier-row" style="background: var(--paper-2);">
+            <div class="tier-letter" style="color: var(--muted);">—</div>
+            <div class="tier-well">
+              <div class="ptag">unranked bench · drop pieces in</div>
+              <div class="piece dark">♟</div><div class="piece">♙</div><div class="piece dark">♟</div>
+            </div>
+            <div class="tier-controls"><button>+</button></div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button class="chip">+ add tier</button>
+            <button class="chip">↕ reorder</button>
+            <button class="chip">🎨 row color</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: match card -->
+        <div class="box d1-rail">
+          <span class="callout green">match metadata — cinematic, broadcast HUD</span>
+          <h4>Match card</h4>
+          <div>
+            <div class="ptag">category</div>
+            <div style="font-family:'Kalam'; font-weight:700; font-size:18px;">Chess Openings · 2026</div>
+          </div>
+          <div class="meta-row"><span>Rows</span><b>5</b></div>
+          <div class="meta-row"><span>Items</span><b>16</b></div>
+          <div class="meta-row"><span>Visibility</span><b>Unlisted</b></div>
+          <div class="meta-row"><span>Allow votes</span><b>On</b></div>
+
+          <div class="box dashed" style="padding: 14px; text-align:center;">
+            <div class="ptag">cover image</div>
+            <div style="font-family:'Caveat',cursive; font-size:22px;">click to upload</div>
+          </div>
+
+          <button class="big-btn">Publish tier list →</button>
+          <button class="big-btn ghost">Presentation mode</button>
+          <button class="big-btn ghost">Export PNG / MP4</button>
+
+          <div class="ptag" style="margin-top:auto;">intended aesthetic: jet black bg, neon-green accents like a lichess broadcast, IBM Plex Mono + Inter.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D1 SHARE -->
+    <div class="screen" data-screen="share">
+      <div class="caption-strip">
+        <span><b>DIRECTION 1</b> Broadcast — share page</span>
+        <span>reads like a post-match recap / esports card</span>
+      </div>
+
+      <div class="d1-share">
+        <div class="box d1-hero">
+          <span class="callout">hero = the scoreboard moment</span>
+          <div class="kicker">Chess Openings · Tier List</div>
+          <h1>The London System belongs in S.<br/>Fight me.</h1>
+          <div class="byline">by @grandmaster_greg · 2026-04-12 · 1,284 views · 312 votes</div>
+          <!-- scoreboard -->
+          <div class="box scoreboard" style="border:none; background:transparent; padding:0;">
+            <div class="scoreboard" style="display:grid; grid-template-columns: repeat(5,1fr); gap:10px; width:100%;">
+              <div class="box filled score-cell"><div class="letter">S</div><div class="count">3 items</div></div>
+              <div class="box filled score-cell"><div class="letter">A</div><div class="count">5 items</div></div>
+              <div class="box filled score-cell"><div class="letter">B</div><div class="count">4 items</div></div>
+              <div class="box filled score-cell"><div class="letter">C</div><div class="count">3 items</div></div>
+              <div class="box filled score-cell"><div class="letter">F</div><div class="count">1 item</div></div>
+            </div>
+          </div>
+
+          <!-- tier rows readout -->
+          <div style="margin-top: 20px; display:flex; flex-direction:column; gap: 10px;">
+            <div class="tier-row"><div class="tier-letter">S</div><div class="tier-well"><div class="piece">♔</div><div class="piece">♕</div><div class="piece dark">♛</div></div><div></div></div>
+            <div class="tier-row"><div class="tier-letter">A</div><div class="tier-well"><div class="piece">♖</div><div class="piece dark">♜</div><div class="piece">♗</div><div class="piece dark">♝</div><div class="piece">♘</div></div><div></div></div>
+            <div class="tier-row"><div class="tier-letter">B</div><div class="tier-well"><div class="piece dark">♞</div><div class="piece">♙</div></div><div></div></div>
+          </div>
+        </div>
+
+        <aside class="box d1-rail">
+          <span class="callout">right rail = community + actions</span>
+          <h4>Community vote</h4>
+          <div class="ptag">do you agree with this ranking?</div>
+          <div class="row">
+            <button class="big-btn">👍 Agree</button>
+            <button class="big-btn ghost">👎 Disagree</button>
+          </div>
+
+          <div style="border-top: 2px dashed var(--ink); padding-top: 14px;">
+            <div class="ptag">top disagreement</div>
+            <p style="margin:4px 0; font-size:14px;">“London in S? Bro, B tier at best.” — 42 upvotes</p>
+          </div>
+
+          <div style="border-top: 2px dashed var(--ink); padding-top: 14px;">
+            <div class="ptag">actions</div>
+            <div class="row">
+              <button class="chip">Remix</button>
+              <button class="chip">Embed</button>
+              <button class="chip">Export PNG</button>
+              <button class="chip">Copy link</button>
+            </div>
+          </div>
+
+          <div class="box filled" style="padding: 12px;">
+            <div class="ptag">related lists</div>
+            <div style="font-family:'Kalam'; font-size: 14px;">• Best defenses for e4 <br/>• Every World Champion, ranked<br/>• Chess.com board sets</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- D1 STATS -->
+    <div class="screen" data-screen="stats">
+      <div class="caption-strip">
+        <span><b>DIRECTION 1</b> Broadcast — stats dashboard</span>
+        <span>ported from pixiechess.xyz · supply / demand / ratios</span>
+      </div>
+
+      <span class="callout">broadcast stats = ticker-tape header, grouped eyebrow sections, full-width chart</span>
+
+      <div class="box" style="padding: 18px 22px; margin-top: 8px;">
+        <div style="display:flex; justify-content: space-between; align-items:baseline;">
+          <div>
+            <div class="ptag">ticker · live</div>
+            <h2 style="font-family:'Caveat',cursive; font-size: 40px; margin: 2px 0 0;">Pixie on-chain</h2>
+          </div>
+          <div class="row">
+            <span class="chip on">24H</span><span class="chip">7D</span><span class="chip">30D</span><span class="chip">All</span>
+            <button class="chip">↻ refresh</button>
+          </div>
+        </div>
+
+        <div class="section-eyebrow">Supply</div>
+        <div class="stat-grid">
+          <div class="stat-card purple"><div class="stat-label">Total Minted</div><div class="stat-value">5,361</div><div class="stat-delta">▲ +82 24H</div><span class="glow-note">neon purple glow</span></div>
+          <div class="stat-card red"><div class="stat-label">Total Burned</div><div class="stat-value">1,116</div><div class="stat-delta">▲ +31 24H</div></div>
+          <div class="stat-card green"><div class="stat-label">Net Supply</div><div class="stat-value">4,245</div><div class="stat-delta">▲ +51 24H</div></div>
+        </div>
+
+        <div class="section-eyebrow">Demand</div>
+        <div class="stat-grid">
+          <div class="stat-card yellow"><div class="stat-label">ETH Spent</div><div class="stat-value">76.45 Ξ</div></div>
+          <div class="stat-card pink"><div class="stat-label">Unique Minters</div><div class="stat-value">436</div></div>
+          <div class="stat-card blue"><div class="stat-label">Ranked Players</div><div class="stat-value">1,065</div></div>
+        </div>
+
+        <div class="section-eyebrow">Ratios</div>
+        <div class="stat-grid">
+          <div class="stat-card red"><div class="stat-label">Burn Rate</div><div class="stat-value">20.8%</div></div>
+          <div class="stat-card yellow"><div class="stat-label">Avg ETH / Mint</div><div class="stat-value">0.0143 Ξ</div></div>
+          <div class="stat-card blue"><div class="stat-label">Avg Mints / Minter</div><div class="stat-value">12.3</div></div>
+        </div>
+
+        <div style="margin-top: 20px;" class="chart-card">
+          <h4>Net Supply over Time</h4>
+          <div class="chart-line">
+            <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#2e6b4f" stroke-width="2" points="0,110 40,100 80,90 120,80 160,72 200,64 240,58 280,52 320,48 360,45 400,42 440,40 480,38 520,36 560,34 600,33" />
+              <polyline fill="none" stroke="#1a1a1a" stroke-width="2" stroke-dasharray="4 3" points="0,140 40,135 80,132 120,128 160,125 200,122 240,120 280,118 320,116 360,114 400,112 440,110 480,108 520,106 560,105 600,104" />
+              <polyline fill="none" stroke="#d94f2a" stroke-width="2" points="0,180 40,175 80,170 120,166 160,164 200,163 240,162 280,161 320,160 360,160 400,160 440,159 480,159 520,158 560,158 600,158" />
+            </svg>
+          </div>
+          <div class="bar-labels"><span>Apr 2</span><span>Apr 5</span><span>Apr 8</span><span>Apr 11</span><span>Apr 14</span><span>Apr 17</span></div>
+          <div class="chart-legend"><span><span class="sw" style="background:#d94f2a;"></span>Burnt</span><span><span class="sw" style="background:#1a1a1a;"></span>Net Supply</span><span><span class="sw" style="background:#2e6b4f;"></span>Total Minted</span></div>
+        </div>
+
+        <div class="stat-two-col">
+          <div class="chart-card">
+            <h4>Daily Burns</h4>
+            <div class="chart-bar">
+              <div class="bar" style="height:30%"></div><div class="bar" style="height:80%"></div><div class="bar" style="height:78%"></div><div class="bar" style="height:35%"></div><div class="bar" style="height:15%"></div><div class="bar" style="height:18%"></div><div class="bar" style="height:22%"></div><div class="bar" style="height:28%"></div><div class="bar" style="height:40%"></div><div class="bar" style="height:33%"></div><div class="bar" style="height:20%"></div><div class="bar" style="height:18%"></div>
+            </div>
+            <div class="bar-labels"><span>Apr 2</span><span>Apr 6</span><span>Apr 10</span><span>Apr 14</span></div>
+          </div>
+          <div class="chart-card">
+            <h4>New vs Returning Minters</h4>
+            <div class="chart-bar">
+              <div class="bar" style="height:75%"></div><div class="bar alt" style="height:40%"></div><div class="bar" style="height:55%"></div><div class="bar alt" style="height:30%"></div><div class="bar" style="height:45%"></div><div class="bar alt" style="height:25%"></div><div class="bar" style="height:30%"></div><div class="bar alt" style="height:20%"></div><div class="bar" style="height:22%"></div><div class="bar alt" style="height:16%"></div>
+            </div>
+            <div class="bar-labels"><span>Apr 2</span><span>Apr 5</span><span>Apr 8</span><span>Apr 11</span></div>
+          </div>
+        </div>
+
+        <div class="ptag" style="margin-top: 16px;">intended aesthetic — jet-black bg, each card glows in its own hue with a soft inner radial (like reference), pixel/blackletter numerals, mono captions.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== DIRECTION 2: ARENA ============================== -->
+  <section class="direction" data-dir="d2">
+
+    <!-- D2 EDITOR -->
+    <div class="screen active" data-screen="editor">
+      <div class="caption-strip">
+        <span><b>DIRECTION 2</b> Arena</span>
+        <span>tier rows ARE the hero — massive letters, bench docked below</span>
+        <span class="faded">the one that most feels like a fighting-game character select</span>
+      </div>
+
+      <div class="d2-editor box">
+        <div class="d2-header">
+          <div>
+            <div class="ptag">untitled tier list</div>
+            <div class="title"><span class="scribble">Ranking every chess piece</span></div>
+          </div>
+          <div class="row">
+            <span class="callout">inline title + HUD</span>
+            <button class="chip">+ tier</button>
+            <button class="chip">Reset</button>
+            <button class="big-btn">Publish →</button>
+          </div>
+        </div>
+
+        <div class="d2-stage">
+          <div class="d2-tier">
+            <div class="big-letter accent">S</div>
+            <div class="tier-well" style="padding:8px;">
+              <div class="piece lg">♔</div>
+              <div class="piece lg">♕</div>
+              <div class="piece lg dark">♛</div>
+              <span class="ptag">drag more here →</span>
+            </div>
+            <div class="tier-controls"><button>⋮</button></div>
+          </div>
+          <div class="d2-tier">
+            <div class="big-letter">A</div>
+            <div class="tier-well" style="padding:8px;">
+              <div class="piece lg">♖</div>
+              <div class="piece lg dark">♜</div>
+            </div>
+            <div class="tier-controls"><button>⋮</button></div>
+          </div>
+          <div class="d2-tier">
+            <div class="big-letter accent2">B</div>
+            <div class="tier-well" style="padding:8px;">
+              <div class="piece lg">♗</div>
+              <div class="piece lg dark">♝</div>
+              <div class="piece lg">♘</div>
+            </div>
+            <div class="tier-controls"><button>⋮</button></div>
+          </div>
+          <div class="d2-tier">
+            <div class="big-letter dark">C</div>
+            <div class="tier-well" style="padding:8px;">
+              <div class="piece lg dark">♞</div>
+            </div>
+            <div class="tier-controls"><button>⋮</button></div>
+          </div>
+          <div class="d2-tier" style="background: var(--paper-2);">
+            <div class="big-letter" style="background: transparent; border-style: dashed; color: var(--muted);">F</div>
+            <div class="tier-well" style="padding:8px;">
+              <span class="ptag">empty — drop what you hate</span>
+            </div>
+            <div class="tier-controls"><button>⋮</button></div>
+          </div>
+        </div>
+
+        <div class="d2-dock">
+          <span class="callout">dock = unranked bench, full-width sled</span>
+          <div class="dock-label">Bench</div>
+          <div class="piece">♙</div>
+          <div class="piece dark">♟</div>
+          <div class="piece">♙</div>
+          <div class="piece dark">♟</div>
+          <div class="piece">♙</div>
+          <div class="piece dark">♟</div>
+          <div class="piece">♙</div>
+          <div class="piece dark">♟</div>
+          <button class="chip">+ add</button>
+          <span class="ptag" style="margin-left:auto;">⌨ shortcut: 1–5 to tier selected</span>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+      <div class="row" style="padding: 0 20px;">
+        <span class="ptag">Intended aesthetic →</span>
+        <span class="chip">jet black bg</span>
+        <span class="chip">cinematic neon letter glow</span>
+        <span class="chip">fighting-game reveal animation on drop</span>
+        <span class="chip">sound on rank-up (optional)</span>
+      </div>
+    </div>
+
+    <!-- D2 SHARE -->
+    <div class="screen" data-screen="share">
+      <div class="caption-strip">
+        <span><b>DIRECTION 2</b> Arena — share page</span>
+        <span>one tall card, optimized for screenshot / phone share</span>
+      </div>
+
+      <div class="d2-share">
+        <span class="callout">vertical share card, designed to screenshot well</span>
+        <div class="ptag" style="letter-spacing:2px;">PIXIETIERS · CHESS OPENINGS</div>
+        <h1>greg's opening rankings</h1>
+        <div class="byline">@grandmaster_greg · apr 2026 · 312 votes</div>
+
+        <div class="tier-card">
+          <div class="big-letter" style="background: var(--accent); color: var(--paper);">S</div>
+          <div>
+            <div class="row"><div class="piece sm">♔</div><div class="piece sm">♕</div><div class="piece sm dark">♛</div></div>
+            <div class="verdict">“the non-negotiables. If you don't play these, you lose.”</div>
+          </div>
+        </div>
+        <div class="tier-card">
+          <div class="big-letter">A</div>
+          <div>
+            <div class="row"><div class="piece sm">♖</div><div class="piece sm dark">♜</div><div class="piece sm">♗</div><div class="piece sm dark">♝</div></div>
+            <div class="verdict">“solid. Brings you to the endgame alive.”</div>
+          </div>
+        </div>
+        <div class="tier-card">
+          <div class="big-letter" style="background: var(--accent-2); color: var(--paper);">B</div>
+          <div>
+            <div class="row"><div class="piece sm">♘</div><div class="piece sm dark">♞</div></div>
+            <div class="verdict">“situational. Useful, not exciting.”</div>
+          </div>
+        </div>
+        <div class="tier-card">
+          <div class="big-letter" style="background: var(--ink); color: var(--paper);">C</div>
+          <div>
+            <div class="row"><div class="piece sm">♙</div><div class="piece sm dark">♟</div></div>
+            <div class="verdict">“the pawns of the tier list, literally.”</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="big-btn">Remix this list</button>
+          <button class="big-btn ghost">Share</button>
+          <button class="big-btn ghost">Vote</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- D2 STATS -->
+    <div class="screen" data-screen="stats">
+      <div class="caption-strip">
+        <span><b>DIRECTION 2</b> Arena — stats dashboard</span>
+        <span>arcade readout — huge numerals, cabinet-style panel</span>
+      </div>
+
+      <span class="callout">arena stats = one big hero metric + a 3×3 scoreboard of secondary numbers</span>
+
+      <div class="box" style="padding: 24px; margin-top: 8px;">
+        <!-- Hero stat -->
+        <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:18px; border-bottom:2px dashed var(--ink); padding-bottom:20px; margin-bottom:20px;">
+          <div>
+            <div class="ptag">hero readout · net supply</div>
+            <div style="font-family:'JetBrains Mono', monospace; font-weight:700; font-size: 140px; line-height:.9; letter-spacing:-3px;">4,245</div>
+            <div class="ptag" style="color: var(--accent);">▲ +51 last 24H · +2.4%</div>
+          </div>
+          <div class="box filled" style="padding: 14px;">
+            <div class="ptag">context strip</div>
+            <div class="meta-row"><span>Total minted</span><b>5,361</b></div>
+            <div class="meta-row"><span>Total burned</span><b>1,116</b></div>
+            <div class="meta-row"><span>Burn rate</span><b>20.8%</b></div>
+            <div class="meta-row"><span>ETH spent</span><b>76.45 Ξ</b></div>
+          </div>
+        </div>
+
+        <!-- 3x3 scoreboard -->
+        <div class="stat-grid" style="margin-bottom:14px;">
+          <div class="stat-card purple"><div class="stat-label">Unique Minters</div><div class="stat-value">436</div></div>
+          <div class="stat-card pink"><div class="stat-label">Ranked Players</div><div class="stat-value">1,065</div></div>
+          <div class="stat-card yellow"><div class="stat-label">Avg ETH / Mint</div><div class="stat-value">0.0143 Ξ</div></div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card blue"><div class="stat-label">Avg Mints / Minter</div><div class="stat-value">12.3</div></div>
+          <div class="stat-card red"><div class="stat-label">Daily Burn Peak</div><div class="stat-value">184</div></div>
+          <div class="stat-card green"><div class="stat-label">Streak (days)</div><div class="stat-value">16</div></div>
+        </div>
+
+        <!-- Cabinet chart strip -->
+        <div class="chart-card" style="margin-top: 20px;">
+          <h4>Supply curve · 30d</h4>
+          <div class="chart-line">
+            <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#1a1a1a" stroke-width="3" points="0,160 60,140 120,115 180,95 240,80 300,68 360,58 420,50 480,44 540,40 600,36" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="ptag" style="margin-top: 14px;">intended aesthetic — cabinet/arcade bezel, single giant neon digital readout, CRT scan-lines, SFX on data refresh.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== DIRECTION 3: CODEX ============================== -->
+  <section class="direction" data-dir="d3">
+
+    <!-- D3 EDITOR -->
+    <div class="screen active" data-screen="editor">
+      <div class="caption-strip">
+        <span><b>DIRECTION 3</b> Codex</span>
+        <span>editorial — tier list + annotation column</span>
+        <span class="faded">most differentiated from tiermaker. Feels like a chess column.</span>
+      </div>
+
+      <div class="d3-editor box">
+        <div class="d3-main">
+          <div class="breadcrumb">Pixietiers / My lists / Untitled</div>
+          <h1>Untitled tier list</h1>
+          <p class="lede">add a headline here — tell readers what this ranking is about.</p>
+
+          <span class="callout">left column: stacked tier rows — editorial grid, not arcade</span>
+          <div class="tier-list">
+            <div class="tier-row">
+              <div class="tier-letter">S</div>
+              <div class="tier-well">
+                <div class="piece">♔</div><div class="piece">♕</div>
+                <span class="ptag">S · 2 items · click a piece to annotate →</span>
+              </div>
+              <div class="tier-controls"><button>⋮</button></div>
+            </div>
+            <div class="tier-row">
+              <div class="tier-letter">A</div>
+              <div class="tier-well">
+                <div class="piece dark">♛</div><div class="piece">♖</div><div class="piece dark">♜</div>
+              </div>
+              <div class="tier-controls"><button>⋮</button></div>
+            </div>
+            <div class="tier-row">
+              <div class="tier-letter">B</div>
+              <div class="tier-well">
+                <div class="piece">♗</div><div class="piece dark">♝</div><div class="piece">♘</div>
+              </div>
+              <div class="tier-controls"><button>⋮</button></div>
+            </div>
+            <div class="tier-row">
+              <div class="tier-letter">C</div>
+              <div class="tier-well">
+                <div class="piece dark">♞</div>
+              </div>
+              <div class="tier-controls"><button>⋮</button></div>
+            </div>
+            <div class="tier-row" style="background: var(--paper-2);">
+              <div class="tier-letter faded">bench</div>
+              <div class="tier-well">
+                <div class="piece">♙</div><div class="piece dark">♟</div><div class="piece">♙</div><div class="piece dark">♟</div>
+              </div>
+              <div class="tier-controls"><button>+</button></div>
+            </div>
+          </div>
+
+          <div class="spacer"></div>
+          <div class="row">
+            <button class="chip">+ tier</button>
+            <button class="chip">Reorder</button>
+            <button class="chip">Add cover</button>
+            <span class="ptag" style="margin-left:auto;">autosaved · 4s ago</span>
+          </div>
+        </div>
+
+        <aside class="d3-codex">
+          <span class="callout green">the codex — annotate each pick</span>
+          <h3>Annotations</h3>
+          <div class="section-tag">why you ranked it there · optional</div>
+
+          <div class="note">
+            <div class="head"><b>King (♔)</b><span class="rank">S</span></div>
+            <p>The whole game is about not losing it. S tier by definition — there's no version of this ranking where it's not on top.</p>
+          </div>
+          <div class="note">
+            <div class="head"><b>Queen (♕)</b><span class="rank">S</span></div>
+            <p>9 points of raw power. Debatably the <i>actual</i> MVP…</p>
+          </div>
+          <div class="note">
+            <div class="head"><b>Rook (♖)</b><span class="rank">A</span></div>
+            <p>click to add your take →</p>
+          </div>
+          <div class="box dashed" style="padding:10px; text-align:center;">
+            <div class="ptag">click a piece in the list to annotate</div>
+          </div>
+
+          <div style="border-top: 2px dashed var(--ink); padding-top: 12px;">
+            <div class="ptag">publishing</div>
+            <button class="big-btn">Publish article →</button>
+            <button class="big-btn ghost">Preview</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- D3 SHARE -->
+    <div class="screen" data-screen="share">
+      <div class="caption-strip">
+        <span><b>DIRECTION 3</b> Codex — share page</span>
+        <span>reads like a chess column / feature article</span>
+      </div>
+
+      <div class="d3-share">
+        <div class="masthead">
+          <span>Pixietiers</span>
+          <span>Chess openings · Vol. 12 · Apr 2026</span>
+          <span>@grandmaster_greg</span>
+        </div>
+
+        <span class="callout" style="margin-top: 14px;">long-form share page — tier list sits inline, like a diagram</span>
+        <h1><span class="scribble">Why the London System is still S tier</span> — and what the community gets wrong.</h1>
+        <div class="dek">A ranking, and an argument, for every chess opening you've actually considered playing.</div>
+
+        <div class="verdict-strip">
+          <div class="cell"><div class="l">S</div><div class="n">3 items</div></div>
+          <div class="cell"><div class="l">A</div><div class="n">5 items</div></div>
+          <div class="cell"><div class="l">B</div><div class="n">4 items</div></div>
+          <div class="cell"><div class="l">C</div><div class="n">3 items</div></div>
+          <div class="cell"><div class="l">F</div><div class="n">1 item</div></div>
+        </div>
+
+        <div class="box" style="padding: 14px; margin-bottom: 24px;">
+          <div class="tier-row"><div class="tier-letter">S</div><div class="tier-well"><div class="piece">♔</div><div class="piece">♕</div><div class="piece dark">♛</div></div><div></div></div>
+          <div class="tier-row"><div class="tier-letter">A</div><div class="tier-well"><div class="piece">♖</div><div class="piece dark">♜</div><div class="piece">♗</div><div class="piece dark">♝</div><div class="piece">♘</div></div><div></div></div>
+          <div class="tier-row"><div class="tier-letter">B</div><div class="tier-well"><div class="piece dark">♞</div><div class="piece">♙</div></div><div></div></div>
+        </div>
+
+        <div class="cols">
+          <p><b>Start at the top.</b> The argument for the London in S isn't that it's the strongest opening — it's that the strength-per-memorization ratio is unmatched. Placeholder copy, placeholder copy, placeholder copy, placeholder copy.</p>
+          <p>Placeholder copy, placeholder copy, placeholder copy, placeholder copy, placeholder copy, placeholder copy, placeholder copy.</p>
+          <p><b>The A tier is where the interesting arguments live.</b> Placeholder copy, placeholder copy, placeholder copy, placeholder copy, placeholder copy.</p>
+          <p>Placeholder copy, placeholder copy, placeholder copy, placeholder copy, placeholder copy.</p>
+          <p><b>The F tier pick — and why it's correct.</b> Placeholder copy, placeholder copy, placeholder copy.</p>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="row" style="justify-content:center; border-top: 2px solid var(--ink); padding-top: 18px;">
+          <button class="big-btn">Remix this list</button>
+          <button class="big-btn ghost">👍 Agree</button>
+          <button class="big-btn ghost">👎 Disagree</button>
+          <button class="big-btn ghost">Share</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- D3 STATS -->
+    <div class="screen" data-screen="stats">
+      <div class="caption-strip">
+        <span><b>DIRECTION 3</b> Codex — stats dashboard</span>
+        <span>editorial — stats framed as a published report</span>
+      </div>
+
+      <div class="d3-share" style="max-width: 1100px;">
+        <div class="masthead">
+          <span>Pixietiers</span>
+          <span>On-chain report · Vol. 17 · Apr 2026</span>
+          <span>live</span>
+        </div>
+
+        <span class="callout" style="margin-top: 14px;">codex stats = stats read like a published data column with commentary</span>
+        <h1 style="font-size: 56px; margin-top: 18px;">The Pixie economy,<br/>in thirteen numbers.</h1>
+        <div class="dek">Burns are up, minters are compounding, and the net supply curve is starting to flatten. A weekly read of Pixie on-chain.</div>
+
+        <!-- Report grid -->
+        <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px;">
+          <div class="stat-card purple" style="min-height:100px;"><div class="stat-label">Total Minted</div><div class="stat-value" style="font-size:32px;">5,361</div></div>
+          <div class="stat-card red" style="min-height:100px;"><div class="stat-label">Total Burned</div><div class="stat-value" style="font-size:32px;">1,116</div></div>
+          <div class="stat-card green" style="min-height:100px;"><div class="stat-label">Net Supply</div><div class="stat-value" style="font-size:32px;">4,245</div></div>
+          <div class="stat-card yellow" style="min-height:100px;"><div class="stat-label">ETH Spent</div><div class="stat-value" style="font-size:32px;">76.45 Ξ</div></div>
+          <div class="stat-card pink" style="min-height:100px;"><div class="stat-label">Unique Minters</div><div class="stat-value" style="font-size:32px;">436</div></div>
+          <div class="stat-card blue" style="min-height:100px;"><div class="stat-label">Ranked Players</div><div class="stat-value" style="font-size:32px;">1,065</div></div>
+          <div class="stat-card red" style="min-height:100px;"><div class="stat-label">Burn Rate</div><div class="stat-value" style="font-size:32px;">20.8%</div></div>
+          <div class="stat-card blue" style="min-height:100px;"><div class="stat-label">Avg / Minter</div><div class="stat-value" style="font-size:32px;">12.3</div></div>
+        </div>
+
+        <div class="chart-card" style="margin: 18px 0;">
+          <h4>Fig. 1 — Net supply over time</h4>
+          <div class="chart-line">
+            <svg viewBox="0 0 600 200" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#2e6b4f" stroke-width="2" points="0,110 80,90 160,72 240,58 320,48 400,42 480,38 560,34 600,33" />
+              <polyline fill="none" stroke="#1a1a1a" stroke-width="2" stroke-dasharray="4 3" points="0,140 80,132 160,125 240,120 320,116 400,112 480,108 560,105 600,104" />
+              <polyline fill="none" stroke="#d94f2a" stroke-width="2" points="0,180 80,170 160,164 240,162 320,160 400,160 480,159 560,158 600,158" />
+            </svg>
+          </div>
+          <div class="chart-legend"><span><span class="sw" style="background:#d94f2a;"></span>Burnt</span><span><span class="sw" style="background:#1a1a1a;"></span>Net Supply</span><span><span class="sw" style="background:#2e6b4f;"></span>Total Minted</span></div>
+        </div>
+
+        <div class="cols">
+          <p><b>The story this week is the burn curve.</b> For the first time in twelve days, burns outpaced the 7-day moving average by more than 30%. Placeholder commentary, placeholder commentary, placeholder commentary.</p>
+          <p>Net supply growth is slowing — still positive, but the second derivative turned negative around Apr 11. Placeholder commentary, placeholder commentary.</p>
+          <p><b>Minters are compounding.</b> The avg mints-per-minter ratio has now exceeded 12 for the first time. Placeholder commentary.</p>
+          <p>Placeholder commentary, placeholder commentary, placeholder commentary, placeholder commentary, placeholder commentary.</p>
+        </div>
+
+        <div class="stat-two-col" style="margin-top: 22px;">
+          <div class="chart-card">
+            <h4>Fig. 2 — Daily burns</h4>
+            <div class="chart-bar">
+              <div class="bar" style="height:30%"></div><div class="bar" style="height:80%"></div><div class="bar" style="height:78%"></div><div class="bar" style="height:35%"></div><div class="bar" style="height:15%"></div><div class="bar" style="height:18%"></div><div class="bar" style="height:22%"></div><div class="bar" style="height:28%"></div><div class="bar" style="height:40%"></div><div class="bar" style="height:33%"></div><div class="bar" style="height:20%"></div><div class="bar" style="height:18%"></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h4>Fig. 3 — New vs returning</h4>
+            <div class="chart-bar">
+              <div class="bar" style="height:75%"></div><div class="bar alt" style="height:40%"></div><div class="bar" style="height:55%"></div><div class="bar alt" style="height:30%"></div><div class="bar" style="height:45%"></div><div class="bar alt" style="height:25%"></div><div class="bar" style="height:30%"></div><div class="bar alt" style="height:20%"></div><div class="bar" style="height:22%"></div><div class="bar alt" style="height:16%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ptag" style="margin-top: 20px; text-align:center;">intended aesthetic — dark editorial, figure captions, sparing use of color (hue only on "key" metrics), typographic numerals.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Tweaks -->
+<div class="tweaks" id="tweaks">
+  <h4>Tweaks</h4>
+  <div class="ptag" style="margin-bottom:6px;">switch direction</div>
+  <label class="opt"><input type="radio" name="dir" value="d1" checked/> ① Broadcast</label>
+  <label class="opt"><input type="radio" name="dir" value="d2"/> ② Arena</label>
+  <label class="opt"><input type="radio" name="dir" value="d3"/> ③ Codex</label>
+  <div class="ptag" style="margin: 10px 0 6px;">screen</div>
+  <label class="opt"><input type="radio" name="scr" value="editor" checked/> Editor</label>
+  <label class="opt"><input type="radio" name="scr" value="share"/> Share page</label>
+  <label class="opt"><input type="radio" name="scr" value="stats"/> Stats dashboard</label>
+</div>
+
+<script>
+(function(){
+  const dirButtons = document.querySelectorAll('#dirTabs .tab');
+  const screenButtons = document.querySelectorAll('#screenSwitch button');
+  const directions = document.querySelectorAll('.direction');
+
+  function setDir(dir){
+    dirButtons.forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
+    directions.forEach(d => d.classList.toggle('active', d.dataset.dir === dir));
+    const tw = document.querySelector('#tweaks input[name="dir"][value="'+dir+'"]');
+    if (tw) tw.checked = true;
+  }
+  function setScreen(screen){
+    screenButtons.forEach(b => b.classList.toggle('active', b.dataset.screen === screen));
+    document.querySelectorAll('.direction .screen').forEach(s => s.classList.toggle('active', s.dataset.screen === screen));
+    const tw = document.querySelector('#tweaks input[name="scr"][value="'+screen+'"]');
+    if (tw) tw.checked = true;
+  }
+
+  dirButtons.forEach(b => b.addEventListener('click', () => setDir(b.dataset.dir)));
+  screenButtons.forEach(b => b.addEventListener('click', () => setScreen(b.dataset.screen)));
+
+  // Tweaks radios
+  document.querySelectorAll('#tweaks input[name="dir"]').forEach(r => r.addEventListener('change', () => setDir(r.value)));
+  document.querySelectorAll('#tweaks input[name="scr"]').forEach(r => r.addEventListener('change', () => setScreen(r.value)));
+
+  // Tweak mode bridge
+  window.addEventListener('message', (e) => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode')   document.getElementById('tweaks').classList.add('open');
+    if (d.type === '__deactivate_edit_mode') document.getElementById('tweaks').classList.remove('open');
+  });
+  window.parent.postMessage({type: '__edit_mode_available'}, '*');
+})();
+</script>
+</body>
+</html>
