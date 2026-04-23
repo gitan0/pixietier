@@ -1449,28 +1449,24 @@ export default function StatsPage({ isMobile }) {
                           href={osFilterUrl(pk)}
                           target="_blank"
                           rel="noopener noreferrer"
+                          title="Available on OpenSea"
                           style={{
                             marginLeft: "auto",
-                            display: "inline-flex", alignItems: "center", gap: 4,
-                            fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
-                            fontSize: 11, fontWeight: 700, letterSpacing: "0.5px",
-                            color: "var(--ink, #ece7ff)",
-                            padding: "5px 10px", borderRadius: 999,
-                            border: `1px solid ${hexToRgba(accent, 0.35)}`,
-                            background: hexToRgba(accent, 0.1),
-                            textDecoration: "none",
-                            transition: "all 0.15s",
+                            display: "inline-flex", alignItems: "center",
+                            transition: "transform 0.15s",
                           }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.background = hexToRgba(accent, 0.2);
-                            e.currentTarget.style.transform = "translateY(-1px)";
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.background = hexToRgba(accent, 0.1);
-                            e.currentTarget.style.transform = "translateY(0)";
-                          }}
+                          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
                         >
-                          OS ↗
+                          <img
+                            src="https://static.seadn.io/badges/Badge+-+Available+On+-+Dark.png"
+                            alt="Available on OpenSea"
+                            style={{
+                              height: 28, width: "auto", display: "block",
+                              borderRadius: 5,
+                              boxShadow: "0 1px 6px rgba(0, 0, 0, 0.25)",
+                            }}
+                          />
                         </a>
                       </div>
                     );
