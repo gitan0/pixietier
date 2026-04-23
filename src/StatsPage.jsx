@@ -117,9 +117,8 @@ const NFT_CONTRACT = "0x15f3b4d6b019d506d719a02ee97121bd95f6b6a6";
 const OS_COLLECTION_SLUG = "pixiechesspieces";
 const OS_TRAIT_NAME = "pieceKey";
 
-// Display name → on-chain pieceKey (camelCase, lowercase first letter).
-// Edge cases (Piñata, Pawn w/ Knife) are best-guesses; fix if floors don't
-// resolve for those pieces.
+// Dune display name → on-chain pieceKey trait value.
+// Verified against OpenSea's pieceKey attribute.
 const PIECE_KEY = {
   "Rocketman": "rocketman",
   "Fission Reactor": "fissionReactor",
@@ -149,7 +148,7 @@ const PIECE_KEY = {
   "Golden Pawn": "goldenPawn",
   "Hero Pawn": "heroPawn",
   "Iron Pawn": "ironPawn",
-  "Pawn w/ Knife": "pawnWKnife",
+  "Pawn w/ Knife": "pawnWithKnife",
   "Shrike": "shrike",
   "War Automaton": "warAutomaton",
   "Warp Jumper": "warpJumper",
@@ -911,46 +910,31 @@ export default function StatsPage({ isMobile }) {
   // and compare to the 7 days before that for a week-over-week delta.
   const topMints7d = (() => {
     const data = mintsByType.data;
-    if (!data?.length) return { rows: [], fromLabel: null, toLabel: null, stale: false };
+    if (!data?.length) return { rows: [], fromLabel: null, toLabel: null };
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const todayUtc = new Date().toISOString().slice(0, 10);
-    const [y, m, d] = todayUtc.split("-");
+    const [, m, d] = todayUtc.split("-");
     const todayLabel = `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}`;
     const completed = data[data.length - 1]?.day === todayLabel
       ? data.slice(0, -1)
       : data;
-    if (completed.length === 0) return { rows: [], fromLabel: null, toLabel: null, stale: false };
+    if (completed.length === 0) return { rows: [], fromLabel: null, toLabel: null };
 
     const last7 = completed.slice(-7);
-    const prev7 = completed.slice(-14, -7);
 
-    const sumByPiece = (rows) => {
-      const totals = {};
-      rows.forEach(r => Object.keys(r).forEach(k => {
-        if (k === "day") return;
-        totals[k] = (totals[k] ?? 0) + Number(r[k] ?? 0);
-      }));
-      return totals;
-    };
-    const curr = sumByPiece(last7);
-    const prior = sumByPiece(prev7);
+    const totals = {};
+    last7.forEach(r => Object.keys(r).forEach(k => {
+      if (k === "day") return;
+      totals[k] = (totals[k] ?? 0) + Number(r[k] ?? 0);
+    }));
 
-    const rows = Object.keys(curr)
-      .map(name => ({ piece_name: name, count: curr[name], prior: prior[name] ?? 0 }))
+    const rows = Object.keys(totals)
+      .map(name => ({ piece_name: name, count: totals[name] }))
       .filter(r => r.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    const fromLabel = last7[0]?.day;
-    const toLabel = last7[last7.length - 1]?.day;
-    const lastMonthIdx = months.indexOf(toLabel?.split(" ")[0]);
-    const lastDayNum = parseInt(toLabel?.split(" ")[1], 10);
-    const todayMs = Date.parse(todayUtc + "T00:00:00Z");
-    const lastMs = lastMonthIdx >= 0 && lastDayNum
-      ? Date.UTC(parseInt(y, 10), lastMonthIdx, lastDayNum)
-      : null;
-    const stale = lastMs != null && (todayMs - lastMs) > 36 * 3600 * 1000;
-    return { rows, fromLabel, toLabel, stale };
+    return { rows, fromLabel: last7[0]?.day, toLabel: last7[last7.length - 1]?.day };
   })();
 
   // ── Piece Market ──────────────────────────────────────────────────────────
@@ -1264,18 +1248,6 @@ export default function StatsPage({ isMobile }) {
           }}>
             Top Mints · Past 7 Days {topMints7d.fromLabel && topMints7d.toLabel ? `· ${topMints7d.fromLabel} – ${topMints7d.toLabel} UTC` : ""}
           </div>
-          {topMints7d.stale && (
-            <div style={{
-              fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
-              fontSize: 10, letterSpacing: "1px",
-              color: "var(--yellow, #ffd04d)",
-              padding: "3px 8px", borderRadius: 999,
-              border: "1px solid rgba(255,208,77,0.35)",
-              background: "rgba(255,208,77,0.06)",
-            }}>
-              Data gap — Dune query not returning recent days
-            </div>
-          )}
           <div style={{
             marginLeft: "auto",
             display: "flex", gap: 12, flexWrap: "wrap",
