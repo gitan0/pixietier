@@ -112,6 +112,57 @@ const PIECE_IMGS = {
   "Warp Jumper": "/warpjumper.webp",
 };
 
+// ─── Piece metadata ───────────────────────────────────────────────────────────
+const PIECE_TYPE = {
+  "Rocketman": "King",
+  "Fission Reactor": "Queen",
+  "Phase Rook": "Rook", "Sumo Rook": "Rook",
+  "Aristocrat": "Bishop", "Basilisk": "Bishop", "Blade Runner": "Bishop",
+  "Bouncer": "Bishop", "Cardinal": "Bishop", "Dancer": "Bishop", "Djinn": "Bishop",
+  "Gunslinger": "Bishop", "Horde Mother": "Bishop", "Icicle": "Bishop",
+  "Marauder": "Bishop", "Pilgrim": "Bishop",
+  "Anti Violence": "Knight", "Banker": "Knight", "Camel": "Knight",
+  "ElectroKnight": "Knight", "Fish": "Knight", "Knightmare": "Knight", "Piñata": "Knight",
+  "Blueprint": "Pawn", "Epee Pawn": "Pawn", "Golden Pawn": "Pawn", "Hero Pawn": "Pawn",
+  "Iron Pawn": "Pawn", "Pawn w/ Knife": "Pawn", "Shrike": "Pawn",
+  "War Automaton": "Pawn", "Warp Jumper": "Pawn",
+};
+
+const PIECE_BLURBS = {
+  "Rocketman":       "Launch-day legend. Crowns the board on liftoff.",
+  "Fission Reactor": "Board-splitting power. Goes critical in the midgame.",
+  "Phase Rook":      "Slides through walls as if they weren't there.",
+  "Sumo Rook":       "Heavy, slow, immovable once it sets its stance.",
+  "Aristocrat":      "Polished diagonals, unbothered by pressure.",
+  "Basilisk":        "Gaze-locked. Freezes lanes without moving.",
+  "Blade Runner":    "Darts between squares on a drawn edge.",
+  "Bouncer":         "Guards the door. Quietly decisive.",
+  "Cardinal":        "Ceremony and steel in equal measure.",
+  "Dancer":          "Light-footed skirmisher — a feint in every tempo.",
+  "Djinn":           "Bends the diagonal. Grants wishes, rarely kind ones.",
+  "Gunslinger":      "One shot, perfectly timed. That's the whole plan.",
+  "Horde Mother":    "Nurtures a swarm. Breaks structure from the back rank.",
+  "Icicle":          "Silent pressure. Snaps when you stop watching.",
+  "Marauder":        "Opportunist. Thrives in open files and open chaos.",
+  "Pilgrim":         "Long march, quiet faith, sudden arrival.",
+  "Anti Violence":   "Disarms threats instead of meeting them head-on.",
+  "Banker":          "Collector of debts. Every trade is logged.",
+  "Camel":           "Ungainly stride, unexpected angle of attack.",
+  "ElectroKnight":   "Hops with a crackle — defenders stutter on contact.",
+  "Fish":            "Slips past structure through currents no one mapped.",
+  "Knightmare":      "Wakes up deep in your lines. Bad dreams from here.",
+  "Piñata":          "Looks fragile. Explodes on the last hit.",
+  "Blueprint":       "Textbook pawn. Everything else builds off this frame.",
+  "Epee Pawn":       "Clean parry, cleaner riposte.",
+  "Golden Pawn":     "Promotes loud. Worth the wait.",
+  "Hero Pawn":       "Steps into the lane every other pawn walked around.",
+  "Iron Pawn":       "A wall of discipline. Refuses to break.",
+  "Pawn w/ Knife":   "Ends the pretense. Pawns do what they have to.",
+  "Shrike":          "Pins and impales — a pawn with predator instinct.",
+  "War Automaton":   "Programmed march. Doesn't flinch, doesn't stop.",
+  "Warp Jumper":     "Skips a rank when the geometry lets it. It usually does.",
+};
+
 // ─── Username map ─────────────────────────────────────────────────────────────
 const USERNAMES = {
   "0x5206b4a8267366574b8b9ebabd7e005958adce59": "Wes",
@@ -715,6 +766,24 @@ export default function StatsPage({ isMobile }) {
       .slice(0, 5);
   })();
 
+  // ── Top Mints 24h (last row of mintsByType, with delta vs prior day) ───
+  const topMints24h = (() => {
+    const data = mintsByType.data;
+    if (!data?.length) return [];
+    const today = data[data.length - 1];
+    const prior = data[data.length - 2];
+    return Object.keys(today)
+      .filter(k => k !== "day")
+      .map(name => ({
+        piece_name: name,
+        count: Number(today[name] ?? 0),
+        prior: Number(prior?.[name] ?? 0),
+      }))
+      .filter(r => r.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  })();
+
   // ── Piece Market ──────────────────────────────────────────────────────────
   const pieceTypes = ["All", ...Array.from(new Set(pieceMarket.map(r => r.piece_type).filter(Boolean))).sort()];
   const filteredMarket = pieceMarket
@@ -1014,6 +1083,157 @@ export default function StatsPage({ isMobile }) {
             }
           </div>
         </div>
+      </div>
+
+      {/* ── Top Mints · 24h ────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 40 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{
+            fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+            fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase",
+            color: "var(--muted, #7a6fa0)",
+          }}>
+            Top Mints · 24h
+          </div>
+          <div style={{
+            marginLeft: "auto",
+            display: "flex", gap: 12, flexWrap: "wrap",
+            fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+            fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
+            color: "var(--muted, #7a6fa0)",
+          }}>
+            {Object.entries(TYPE_COLORS).map(([type, c]) => (
+              <span key={type} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 999, background: c.bg, display: "inline-block" }} />
+                {type}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {mintsByTypeLoading ? (
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)", gap: 16 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} style={{
+                background: "var(--card, #140f20)", border: "1px solid var(--line, #2a2140)",
+                borderRadius: 16, padding: 14, minHeight: 320,
+              }}>
+                <Skeleton h={180} radius={12} />
+                <div style={{ marginTop: 12 }}><Skeleton h={14} w={120} /></div>
+                <div style={{ marginTop: 8 }}><Skeleton h={22} w={80} /></div>
+              </div>
+            ))}
+          </div>
+        ) : topMints24h.length === 0 ? (
+          <div style={{
+            background: "var(--card, #140f20)", border: "1px solid var(--line, #2a2140)",
+            borderRadius: 16, padding: "28px 20px",
+            fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
+            fontSize: 13, color: "var(--muted, #7a6fa0)", textAlign: "center",
+          }}>
+            No auction mints in the last 24 hours.
+          </div>
+        ) : (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
+            gap: 16,
+          }}>
+            {topMints24h.map((row, i) => {
+              const type = PIECE_TYPE[row.piece_name] ?? "Pawn";
+              const tc = TYPE_COLORS[type] ?? { bg: "var(--muted, #7a6fa0)" };
+              const accent = tc.bg;
+              const img = PIECE_IMGS[row.piece_name];
+              const blurb = PIECE_BLURBS[row.piece_name];
+              const delta = row.count - row.prior;
+              const pct = row.prior > 0 ? (delta / row.prior) * 100 : null;
+              const isPos = delta > 0, isNeg = delta < 0;
+              const deltaColor = isPos ? "var(--green, #4cd694)" : isNeg ? "var(--red, #ff4d5e)" : "var(--muted, #7a6fa0)";
+              return (
+                <div key={row.piece_name} style={{
+                  position: "relative",
+                  background: `linear-gradient(180deg, ${hexToRgba(accent, 0.14)} 0%, var(--card, #140f20) 55%)`,
+                  border: `1px solid ${hexToRgba(accent, 0.28)}`,
+                  borderRadius: 16, padding: 14,
+                  display: "flex", flexDirection: "column", gap: 10,
+                  gridColumn: isMobile && i === 0 ? "1 / -1" : undefined,
+                }}>
+                  <div style={{
+                    position: "absolute", top: 10, right: 12,
+                    width: 8, height: 8, borderRadius: 999, background: accent,
+                    boxShadow: `0 0 10px ${hexToRgba(accent, 0.7)}`,
+                  }} />
+                  <div style={{
+                    position: "relative",
+                    height: isMobile && i === 0 ? 220 : 160,
+                    borderRadius: 12, overflow: "hidden",
+                    background: `radial-gradient(circle at 50% 60%, ${hexToRgba(accent, 0.18)}, transparent 70%)`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {img && (
+                      <img src={img} alt={row.piece_name} style={{
+                        maxWidth: "100%", maxHeight: "100%", objectFit: "contain",
+                        filter: `drop-shadow(0 6px 20px ${hexToRgba(accent, 0.35)})`,
+                      }} />
+                    )}
+                    <div style={{
+                      position: "absolute", top: 8, left: 10,
+                      fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                      fontSize: 11, fontWeight: 700, letterSpacing: "1px",
+                      color: "var(--muted, #7a6fa0)",
+                    }}>#{i + 1}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <div style={{
+                      fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
+                      fontWeight: 700, fontSize: 14, color: "var(--ink, #ece7ff)",
+                      lineHeight: 1.2,
+                    }}>
+                      {row.piece_name}
+                    </div>
+                    <TypeBadge type={type} />
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                    <div style={{
+                      fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                      fontSize: 24, fontWeight: 700, color: accent, lineHeight: 1,
+                      textShadow: `0 0 18px ${hexToRgba(accent, 0.5)}`,
+                    }}>
+                      {row.count.toLocaleString()}
+                    </div>
+                    <div style={{
+                      fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                      fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
+                      color: "var(--muted-2, #4d4468)",
+                    }}>
+                      mints
+                    </div>
+                    {pct != null && (
+                      <span style={{
+                        marginLeft: "auto",
+                        fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                        fontSize: 11, fontWeight: 700, color: deltaColor,
+                      }}>
+                        {isPos ? "▲" : isNeg ? "▼" : "·"} {Math.abs(pct).toFixed(0)}%
+                      </span>
+                    )}
+                  </div>
+                  {blurb && (
+                    <div style={{
+                      fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
+                      fontSize: 12, fontStyle: "italic",
+                      color: "var(--muted, #7a6fa0)", lineHeight: 1.4,
+                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}>
+                      {blurb}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Piece Market Overview ──────────────────────────────────────── */}
