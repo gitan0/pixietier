@@ -512,6 +512,28 @@ export default function StatsPage({ isMobile }) {
 
   const [errors, setErrors] = useState({});
   const setError = useCallback((key, err) => setErrors(prev => ({ ...prev, [key]: err.message })), []);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith("dune_cache_"))
+      .forEach(k => localStorage.removeItem(k));
+    setErrors({});
+    setKpiLoading(true);
+    setPieceMarketLoading(true);
+    setDailyBurnsLoading(true);
+    setNewVsReturningLoading(true);
+    setRevenueSplitLoading(true);
+    setWhaleLoading(true);
+    setSupplyLoading(true);
+    setMintsByTypeLoading(true);
+    setCohortRetentionLoading(true);
+    setRevenueSplitDailyLoading(true);
+    setRefreshing(true);
+    setRefreshKey(k => k + 1);
+    setTimeout(() => setRefreshing(false), 900);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -555,7 +577,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("kpis", err); }
       finally { setKpiLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -565,7 +587,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("pieceMarket", err); }
       finally { setPieceMarketLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -575,7 +597,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("dailyBurns", err); }
       finally { setDailyBurnsLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -585,7 +607,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("newVsReturning", err); }
       finally { setNewVsReturningLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -595,7 +617,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("revenueSplit", err); }
       finally { setRevenueSplitLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -605,7 +627,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("whaleLeaderboard", err); }
       finally { setWhaleLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -615,7 +637,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("supplyOverTime", err); }
       finally { setSupplyLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -629,7 +651,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("mintsByType", err); }
       finally { setMintsByTypeLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     if (!QUERIES.cohortRetention) { setCohortRetentionLoading(false); return; }
@@ -640,7 +662,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("cohortRetention", err); }
       finally { setCohortRetentionLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   useEffect(() => {
     if (!QUERIES.revenueSplitDaily) { setRevenueSplitDailyLoading(false); return; }
@@ -651,7 +673,7 @@ export default function StatsPage({ isMobile }) {
       } catch (err) { setError("revenueSplitDaily", err); }
       finally { setRevenueSplitDailyLoading(false); }
     })();
-  }, [setError]);
+  }, [setError, refreshKey]);
 
   // ── Derived KPIs ──────────────────────────────────────────────────────────
   const burnRate = kpis.totalMinted > 0
@@ -742,6 +764,7 @@ export default function StatsPage({ isMobile }) {
       <style>{`
         @keyframes shimmer { 0%,100%{opacity:1}50%{opacity:0.4} }
         @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.35} }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
       {/* Toolbar */}
@@ -761,24 +784,24 @@ export default function StatsPage({ isMobile }) {
             </span>
           )}
           <button
-            onClick={() => {
-              Object.keys(localStorage)
-                .filter(k => k.startsWith("dune_cache_"))
-                .forEach(k => localStorage.removeItem(k));
-              window.location.reload();
-            }}
+            onClick={handleRefresh}
+            disabled={refreshing}
             style={{
               padding: "7px 14px", borderRadius: 10,
               border: "1px solid var(--line-2, #3a2d55)",
               background: "rgba(28,21,48,.6)", color: "var(--ink, #ece7ff)",
-              fontSize: 12, fontWeight: 600, cursor: "pointer",
+              fontSize: 12, fontWeight: 600,
+              cursor: refreshing ? "default" : "pointer",
               fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
               transition: "border-color .15s",
+              opacity: refreshing ? 0.7 : 1,
+              display: "inline-flex", alignItems: "center", gap: 6,
             }}
             onMouseEnter={e => e.currentTarget.style.borderColor = "var(--purple, #9d6cff)"}
             onMouseLeave={e => e.currentTarget.style.borderColor = "var(--line-2, #3a2d55)"}
           >
-            ↻ Refresh data
+            <span style={{ display: "inline-block", animation: refreshing ? "spin 0.8s linear infinite" : "none" }}>↻</span>
+            {refreshing ? "Refreshing…" : "Refresh data"}
           </button>
         </div>
       </div>
@@ -791,8 +814,8 @@ export default function StatsPage({ isMobile }) {
           <KpiCard label="Net Supply"      value={kpis.netSupply?.toLocaleString()}    loading={kpiLoading} accent="#34d399" delta={deltaNet} />
         </KpiTier>
         <KpiTier label="Demand" isMobile={isMobile} cols={4}>
-          <KpiCard label="ETH Spent"       value={kpis.totalEth != null ? Number(kpis.totalEth).toFixed(2) + " Ξ" : undefined} loading={kpiLoading} accent="#fbbf24" />
-          <KpiCard label="Unique Minters"  value={kpis.uniquePlayers?.toLocaleString()} loading={kpiLoading} accent="#f472b6" />
+          <KpiCard label="ETH Spent"       value={kpis.totalEth != null ? Number(kpis.totalEth).toFixed(2) + " Ξ" : undefined} loading={kpiLoading} accent="#fbbf24" delta={deltaEth} deltaSuffix=" Ξ" />
+          <KpiCard label="Unique Minters"  value={kpis.uniquePlayers?.toLocaleString()} loading={kpiLoading} accent="#f472b6" delta={deltaNewMinters} />
           <KpiCard label="Ranked Players"  value={rankedPlayers?.toLocaleString()} loading={rankedPlayersLoading} accent="#38bdf8" />
           <KpiCard label="Games (24h)"     value={games24h?.toLocaleString()}     loading={rankedPlayersLoading} accent="#34d399" />
         </KpiTier>
@@ -974,11 +997,11 @@ export default function StatsPage({ isMobile }) {
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                           <div style={{ width: 10, height: 10, borderRadius: 2, background: getRevenueColor(row.mint_method) }} />
                           <div style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", fontFamily: "Space Grotesk", letterSpacing: "0.04em", textTransform: "uppercase" }}>{row.mint_method}</div>
-                          <div style={{ marginLeft: "auto", fontSize: 12, color: getRevenueColor(row.mint_method), fontFamily: "Orbitron, sans-serif", fontWeight: 700 }}>
+                          <div style={{ marginLeft: "auto", fontSize: 12, color: getRevenueColor(row.mint_method), fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)", fontWeight: 700 }}>
                             {Number(row.pct_of_total ?? 0).toFixed(1)}%
                           </div>
                         </div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", fontFamily: "Orbitron, sans-serif" }}>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--ink, #ece7ff)", fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)" }}>
                           {Number(row.total_eth ?? 0).toFixed(2)} Ξ
                         </div>
                         <div style={{ fontSize: 11, color: "#64748b", fontFamily: "Space Grotesk", marginTop: 2 }}>
@@ -993,42 +1016,22 @@ export default function StatsPage({ isMobile }) {
         </div>
       </div>
 
-      {/* ── Daily Mints by Piece ───────────────────────────────────────── */}
-      <div style={{ marginBottom: 40 }}>
-        <SectionHeader>Daily Mints by Piece</SectionHeader>
-        <div style={{ position: "relative", borderRadius: 12, overflow: "hidden" }}>
-          {/* Blurred chart underneath — pointer-events disabled so nothing is interactive */}
-          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none",
-                        background: "var(--card, #140f20)", border: "1px solid var(--line, #2a2140)",
-                        borderRadius: 12, padding: "20px 16px" }}>
-            <Skeleton h={16} w={180} radius={4} />
-            <div style={{ marginTop: 12 }}>
-              <Skeleton h={260} radius={8} />
-            </div>
-          </div>
-          {/* Coming Soon overlay */}
-          <div style={{
-            position: "absolute", inset: 0, borderRadius: 12,
-            background: "rgba(10,9,16,0.55)",
-            display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", gap: 10,
-          }}>
-            <div style={{ fontSize: 28 }}>🔧</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0",
-                          fontFamily: "Space Grotesk, sans-serif" }}>
-              Coming Soon
-            </div>
-            <div style={{ fontSize: 12, color: "#64748b", fontFamily: "Space Grotesk, sans-serif",
-                          textAlign: "center", maxWidth: 340 }}>
-              This chart is being upgraded to track all auction contracts accurately.
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ── Piece Market Overview ──────────────────────────────────────── */}
       <div style={{ marginBottom: 40 }}>
         <SectionHeader>Piece Market Overview</SectionHeader>
+        <div style={{
+          display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 14,
+          fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+          fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
+          color: "var(--muted, #7a6fa0)",
+        }}>
+          {Object.entries(TYPE_COLORS).map(([type, c]) => (
+            <span key={type} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: c.bg, display: "inline-block" }} />
+              {type}
+            </span>
+          ))}
+        </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
           {pieceTypes.map(t => (
             <button key={t} onClick={() => setPmFilter(t)} style={{
