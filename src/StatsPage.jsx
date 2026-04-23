@@ -766,16 +766,24 @@ export default function StatsPage({ isMobile }) {
       .slice(0, 5);
   })();
 
-  // ── Top Mints: last *completed* UTC day (skip today's partial row) ───
-  // Dune's DATE_TRUNC('day', ...) is UTC midnight; the Pixie auction cycle
-  // rolls at ~16:00 UTC, so today's row is always partial and not
-  // comparable to prior days. We compare the last two completed days.
+  // ── Top Mints: last completed UTC day in the data. Only treat the
+  // final row as "partial" when it matches today UTC — otherwise it's a
+  // stale-but-complete day we should show as-is.
   const topMintsLastDay = (() => {
     const data = mintsByType.data;
-    if (!data?.length) return { rows: [], dayLabel: null };
-    const last = data[data.length - 2];
-    const prior = data[data.length - 3];
-    if (!last) return { rows: [], dayLabel: null };
+    if (!data?.length) return { rows: [], dayLabel: null, stale: false };
+    const todayUtc = new Date().toISOString().slice(0, 10);
+    // Find the raw ISO day for each pivoted row by looking up the
+    // corresponding raw rows; since mintsByType.data has day already
+    // formatted ("Apr 19"), we compare by index against today. If the
+    // last row's formatted day equals today's "Mon D", drop it as partial.
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const [y, m, d] = todayUtc.split("-");
+    const todayLabel = `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}`;
+    const lastIsToday = data[data.length - 1]?.day === todayLabel;
+    const last = lastIsToday ? data[data.length - 2] : data[data.length - 1];
+    const prior = lastIsToday ? data[data.length - 3] : data[data.length - 2];
+    if (!last) return { rows: [], dayLabel: null, stale: false };
     const rows = Object.keys(last)
       .filter(k => k !== "day")
       .map(name => ({
@@ -786,7 +794,15 @@ export default function StatsPage({ isMobile }) {
       .filter(r => r.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
-    return { rows, dayLabel: last.day };
+    // Stale if the shown day is more than ~36h behind today UTC
+    const todayMs = Date.parse(todayUtc + "T00:00:00Z");
+    const lastMonthIdx = months.indexOf(last.day?.split(" ")[0]);
+    const lastDayNum = parseInt(last.day?.split(" ")[1], 10);
+    const lastMs = lastMonthIdx >= 0 && lastDayNum
+      ? Date.UTC(parseInt(y, 10), lastMonthIdx, lastDayNum)
+      : null;
+    const stale = lastMs != null && (todayMs - lastMs) > 36 * 3600 * 1000;
+    return { rows, dayLabel: last.day, stale };
   })();
 
   // ── Piece Market ──────────────────────────────────────────────────────────
@@ -1100,6 +1116,18 @@ export default function StatsPage({ isMobile }) {
           }}>
             Top Mints {topMintsLastDay.dayLabel ? `· ${topMintsLastDay.dayLabel} UTC` : ""}
           </div>
+          {topMintsLastDay.stale && (
+            <div style={{
+              fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+              fontSize: 10, letterSpacing: "1px",
+              color: "var(--yellow, #ffd04d)",
+              padding: "3px 8px", borderRadius: 999,
+              border: "1px solid rgba(255,208,77,0.35)",
+              background: "rgba(255,208,77,0.06)",
+            }}>
+              Data gap — Dune query not returning recent days
+            </div>
+          )}
           <div style={{
             marginLeft: "auto",
             display: "flex", gap: 12, flexWrap: "wrap",
