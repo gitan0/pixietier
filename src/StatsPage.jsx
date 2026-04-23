@@ -697,16 +697,23 @@ export default function StatsPage({ isMobile }) {
 
     (async () => {
       try {
-        const listRes = await fetch(
-          `https://api.opensea.io/api/v2/listings/collection/${OS_COLLECTION_SLUG}/all?limit=100&order_by=eth_price&order_direction=asc`,
-          { headers }
-        );
-        if (!listRes.ok) throw new Error(`OS listings ${listRes.status}`);
-        const listJson = await listRes.json();
-        const listings = (listJson.listings || []).map(l => ({
-          tokenId: l.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria,
-          priceWei: l.price?.current?.value,
-        })).filter(x => x.tokenId && x.priceWei);
+        const MAX_PAGES = 8;
+        const listings = [];
+        let next = null;
+        for (let page = 0; page < MAX_PAGES; page++) {
+          const url = `https://api.opensea.io/api/v2/listings/collection/${OS_COLLECTION_SLUG}/all?limit=100&order_by=eth_price&order_direction=asc` +
+            (next ? `&next=${encodeURIComponent(next)}` : "");
+          const listRes = await fetch(url, { headers });
+          if (!listRes.ok) throw new Error(`OS listings ${listRes.status}`);
+          const listJson = await listRes.json();
+          const pageListings = (listJson.listings || []).map(l => ({
+            tokenId: l.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria,
+            priceWei: l.price?.current?.value,
+          })).filter(x => x.tokenId && x.priceWei);
+          listings.push(...pageListings);
+          next = listJson.next;
+          if (!next || pageListings.length === 0) break;
+        }
 
         let tokenTraits = {};
         try { tokenTraits = JSON.parse(localStorage.getItem(TRAIT_CACHE) || "{}"); } catch (_) {}
