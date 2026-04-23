@@ -766,22 +766,27 @@ export default function StatsPage({ isMobile }) {
       .slice(0, 5);
   })();
 
-  // ── Top Mints 24h (last row of mintsByType, with delta vs prior day) ───
-  const topMints24h = (() => {
+  // ── Top Mints: last *completed* UTC day (skip today's partial row) ───
+  // Dune's DATE_TRUNC('day', ...) is UTC midnight; the Pixie auction cycle
+  // rolls at ~16:00 UTC, so today's row is always partial and not
+  // comparable to prior days. We compare the last two completed days.
+  const topMintsLastDay = (() => {
     const data = mintsByType.data;
-    if (!data?.length) return [];
-    const today = data[data.length - 1];
-    const prior = data[data.length - 2];
-    return Object.keys(today)
+    if (!data?.length) return { rows: [], dayLabel: null };
+    const last = data[data.length - 2];
+    const prior = data[data.length - 3];
+    if (!last) return { rows: [], dayLabel: null };
+    const rows = Object.keys(last)
       .filter(k => k !== "day")
       .map(name => ({
         piece_name: name,
-        count: Number(today[name] ?? 0),
+        count: Number(last[name] ?? 0),
         prior: Number(prior?.[name] ?? 0),
       }))
       .filter(r => r.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
+    return { rows, dayLabel: last.day };
   })();
 
   // ── Piece Market ──────────────────────────────────────────────────────────
@@ -1085,7 +1090,7 @@ export default function StatsPage({ isMobile }) {
         </div>
       </div>
 
-      {/* ── Top Mints · 24h ────────────────────────────────────────────── */}
+      {/* ── Top Mints · Last Full Day ─────────────────────────────────── */}
       <div style={{ marginBottom: 40 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
           <div style={{
@@ -1093,7 +1098,7 @@ export default function StatsPage({ isMobile }) {
             fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase",
             color: "var(--muted, #7a6fa0)",
           }}>
-            Top Mints · 24h
+            Top Mints {topMintsLastDay.dayLabel ? `· ${topMintsLastDay.dayLabel} UTC` : ""}
           </div>
           <div style={{
             marginLeft: "auto",
@@ -1124,14 +1129,14 @@ export default function StatsPage({ isMobile }) {
               </div>
             ))}
           </div>
-        ) : topMints24h.length === 0 ? (
+        ) : topMintsLastDay.rows.length === 0 ? (
           <div style={{
             background: "var(--card, #140f20)", border: "1px solid var(--line, #2a2140)",
             borderRadius: 16, padding: "28px 20px",
             fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
             fontSize: 13, color: "var(--muted, #7a6fa0)", textAlign: "center",
           }}>
-            No auction mints in the last 24 hours.
+            No mints recorded for the last full day yet.
           </div>
         ) : (
           <div style={{
@@ -1139,7 +1144,7 @@ export default function StatsPage({ isMobile }) {
             gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
             gap: 16,
           }}>
-            {topMints24h.map((row, i) => {
+            {topMintsLastDay.rows.map((row, i) => {
               const type = PIECE_TYPE[row.piece_name] ?? "Pawn";
               const tc = TYPE_COLORS[type] ?? { bg: "var(--muted, #7a6fa0)" };
               const accent = tc.bg;
