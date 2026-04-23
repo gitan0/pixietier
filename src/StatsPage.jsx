@@ -244,14 +244,24 @@ const USERNAMES = {
   "0xa9e8529bbb2877ba2871eae5b4da0b886001b703": "outcraft",
 };
 
+const USERNAME_TO_ADDRESS = Object.fromEntries(
+  Object.entries(USERNAMES).map(([addr, name]) => [name.toLowerCase(), addr])
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function resolvePlayer(addr) {
   if (!addr) return { name: "—", isAddress: false };
-  if (!addr.match(/^0x[0-9a-fA-F]{40,}$/)) return { name: addr, isAddress: false };
-  const norm = normalizeAddress(addr);
-  const known = USERNAMES[norm];
-  if (known) return { name: known, isAddress: false };
-  return { name: norm.slice(0, 6) + "…" + norm.slice(-4), isAddress: true, norm };
+  if (addr.match(/^0x[0-9a-fA-F]{40,}$/)) {
+    const norm = normalizeAddress(addr);
+    const known = USERNAMES[norm];
+    const name = known ?? (norm.slice(0, 6) + "…" + norm.slice(-4));
+    return { name, isAddress: true, norm, isKnown: !!known };
+  }
+  const addrFromName = USERNAME_TO_ADDRESS[addr.toLowerCase()];
+  if (addrFromName) {
+    return { name: addr, isAddress: true, norm: addrFromName, isKnown: true };
+  }
+  return { name: addr, isAddress: false };
 }
 
 function formatChartDate(dateStr) {
@@ -887,6 +897,27 @@ export default function StatsPage({ isMobile }) {
     : null;
   const deltaNewMinters = newVsReturning.length ? Number(newVsReturning[newVsReturning.length - 1].new_minters ?? 0) : null;
 
+  // ── Ranked Players / Games 24h deltas: compare latest snapshot vs one ≥24h older ──
+  const { deltaRankedPlayers, deltaGames24h } = (() => {
+    if (!playerSnapshots.length) return { deltaRankedPlayers: null, deltaGames24h: null };
+    const latest = playerSnapshots[playerSnapshots.length - 1];
+    const latestT = new Date(latest.snapped_at).getTime();
+    const DAY = 24 * 60 * 60 * 1000;
+    let prior = null;
+    for (let i = playerSnapshots.length - 2; i >= 0; i--) {
+      if (latestT - new Date(playerSnapshots[i].snapped_at).getTime() >= DAY) {
+        prior = playerSnapshots[i];
+        break;
+      }
+    }
+    if (!prior) return { deltaRankedPlayers: null, deltaGames24h: null };
+    const rp = latest.total_ranked_players != null && prior.total_ranked_players != null
+      ? Number(latest.total_ranked_players) - Number(prior.total_ranked_players) : null;
+    const g = latest.games_24h != null && prior.games_24h != null
+      ? Number(latest.games_24h) - Number(prior.games_24h) : null;
+    return { deltaRankedPlayers: rp, deltaGames24h: g };
+  })();
+
   // ── Top pieces last 7 days (derived from mintsByType) ──────────────────
   const topPieces7d = (() => {
     const data = mintsByType.data;
@@ -1038,8 +1069,8 @@ export default function StatsPage({ isMobile }) {
         <KpiTier label="Demand" isMobile={isMobile} cols={4}>
           <KpiCard label="ETH Spent"       value={kpis.totalEth != null ? Number(kpis.totalEth).toFixed(2) + " Ξ" : undefined} loading={kpiLoading} accent="#fbbf24" delta={deltaEth} deltaSuffix=" Ξ" />
           <KpiCard label="Unique Minters"  value={kpis.uniquePlayers?.toLocaleString()} loading={kpiLoading} accent="#f472b6" delta={deltaNewMinters} />
-          <KpiCard label="Ranked Players"  value={rankedPlayers?.toLocaleString()} loading={rankedPlayersLoading} accent="#38bdf8" />
-          <KpiCard label="Games (24h)"     value={games24h?.toLocaleString()}     loading={rankedPlayersLoading} accent="#34d399" />
+          <KpiCard label="Ranked Players"  value={rankedPlayers?.toLocaleString()} loading={rankedPlayersLoading} accent="#38bdf8" delta={deltaRankedPlayers} />
+          <KpiCard label="Games (24h)"     value={games24h?.toLocaleString()}     loading={rankedPlayersLoading} accent="#34d399" delta={deltaGames24h} />
         </KpiTier>
         <KpiTier label="Ratios" muted isMobile={isMobile}>
           <KpiCard label="Burn Rate"          value={burnRate}          loading={kpiLoading} accent="#f87171" small />
@@ -1379,17 +1410,6 @@ export default function StatsPage({ isMobile }) {
                       </span>
                     )}
                   </div>
-                  {blurb && (
-                    <div style={{
-                      fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
-                      fontSize: 12, fontStyle: "italic",
-                      color: "var(--muted, #7a6fa0)", lineHeight: 1.4,
-                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}>
-                      {blurb}
-                    </div>
-                  )}
                   {(() => {
                     const pk = PIECE_KEY[row.piece_name];
                     if (!pk) return null;
