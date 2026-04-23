@@ -112,6 +112,54 @@ const PIECE_IMGS = {
   "Warp Jumper": "/warpjumper.webp",
 };
 
+// ─── OpenSea / Reservoir config ──────────────────────────────────────────────
+const NFT_CONTRACT = "0x15f3b4d6b019d506d719a02ee97121bd95f6b6a6";
+const OS_COLLECTION_SLUG = "pixiechesspieces";
+const OS_TRAIT_NAME = "pieceKey";
+
+// Display name → on-chain pieceKey (camelCase, lowercase first letter).
+// Edge cases (Piñata, Pawn w/ Knife) are best-guesses; fix if floors don't
+// resolve for those pieces.
+const PIECE_KEY = {
+  "Rocketman": "rocketman",
+  "Fission Reactor": "fissionReactor",
+  "Phase Rook": "phaseRook",
+  "Sumo Rook": "sumoRook",
+  "Aristocrat": "aristocrat",
+  "Basilisk": "basilisk",
+  "Blade Runner": "bladeRunner",
+  "Bouncer": "bouncer",
+  "Cardinal": "cardinal",
+  "Dancer": "dancer",
+  "Djinn": "djinn",
+  "Gunslinger": "gunslinger",
+  "Horde Mother": "hordeMother",
+  "Icicle": "icicle",
+  "Marauder": "marauder",
+  "Pilgrim": "pilgrim",
+  "Anti Violence": "antiViolence",
+  "Banker": "banker",
+  "Camel": "camel",
+  "ElectroKnight": "electroKnight",
+  "Fish": "fish",
+  "Knightmare": "knightmare",
+  "Piñata": "pinata",
+  "Blueprint": "blueprint",
+  "Epee Pawn": "epeePawn",
+  "Golden Pawn": "goldenPawn",
+  "Hero Pawn": "heroPawn",
+  "Iron Pawn": "ironPawn",
+  "Pawn w/ Knife": "pawnWKnife",
+  "Shrike": "shrike",
+  "War Automaton": "warAutomaton",
+  "Warp Jumper": "warpJumper",
+};
+
+function osFilterUrl(pieceKey) {
+  const traits = encodeURIComponent(JSON.stringify([{ traitType: OS_TRAIT_NAME, values: [pieceKey] }]));
+  return `https://opensea.io/collection/${OS_COLLECTION_SLUG}?traits=${traits}`;
+}
+
 // ─── Piece metadata ───────────────────────────────────────────────────────────
 const PIECE_TYPE = {
   "Rocketman": "King",
@@ -563,13 +611,19 @@ export default function StatsPage({ isMobile }) {
 
   const [errors, setErrors] = useState({});
   const setError = useCallback((key, err) => setErrors(prev => ({ ...prev, [key]: err.message })), []);
+
+  // pieceKey → floor in ETH (null once resolved to no listing)
+  const [pieceFloors, setPieceFloors] = useState({});
+  const [pieceFloorsLoading, setPieceFloorsLoading] = useState(true);
+
   const [refreshKey, setRefreshKey] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
     Object.keys(localStorage)
-      .filter(k => k.startsWith("dune_cache_"))
+      .filter(k => k.startsWith("dune_cache_") || k === "os_piece_floors_v1")
       .forEach(k => localStorage.removeItem(k));
+    setPieceFloorsLoading(true);
     setErrors({});
     setKpiLoading(true);
     setPieceMarketLoading(true);
@@ -606,6 +660,92 @@ export default function StatsPage({ isMobile }) {
     })();
     getPlayerSnapshots().then(setPlayerSnapshots).catch(() => {}).finally(() => setPlayerSnapshotsLoading(false));
   }, []);
+
+  // OpenSea per-piece floors. Strategy:
+  //   1. Fetch cheapest-first listings (1 page, 100 listings).
+  //   2. For each unique tokenId, look up pieceKey trait (cached in
+  //      localStorage forever — traits are immutable).
+  //   3. Aggregate min price per pieceKey.
+  useEffect(() => {
+    const key = import.meta.env.VITE_OPENSEA_API_KEY;
+    if (!key) { setPieceFloorsLoading(false); return; }
+    let cancelled = false;
+    const TRAIT_CACHE = "os_token_piecekey_v1";
+    const FLOOR_CACHE = "os_piece_floors_v1";
+    const FLOOR_TTL = 10 * 60 * 1000;
+
+    // Serve cached floors immediately if fresh
+    try {
+      const c = JSON.parse(localStorage.getItem(FLOOR_CACHE) || "null");
+      if (c && Date.now() - c.at < FLOOR_TTL) {
+        setPieceFloors(c.floors);
+        setPieceFloorsLoading(false);
+        return;
+      }
+    } catch (_) {}
+
+    const headers = { "X-API-KEY": key, accept: "application/json" };
+
+    (async () => {
+      try {
+        const listRes = await fetch(
+          `https://api.opensea.io/api/v2/listings/collection/${OS_COLLECTION_SLUG}/all?limit=100&order_by=eth_price&order_direction=asc`,
+          { headers }
+        );
+        if (!listRes.ok) throw new Error(`OS listings ${listRes.status}`);
+        const listJson = await listRes.json();
+        const listings = (listJson.listings || []).map(l => ({
+          tokenId: l.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria,
+          priceWei: l.price?.current?.value,
+        })).filter(x => x.tokenId && x.priceWei);
+
+        let tokenTraits = {};
+        try { tokenTraits = JSON.parse(localStorage.getItem(TRAIT_CACHE) || "{}"); } catch (_) {}
+        const needed = [...new Set(listings.map(l => l.tokenId))].filter(t => !(t in tokenTraits));
+
+        const concurrency = 4;
+        const queue = [...needed];
+        await Promise.all(Array.from({ length: concurrency }, async () => {
+          while (queue.length && !cancelled) {
+            const id = queue.shift();
+            try {
+              const r = await fetch(
+                `https://api.opensea.io/api/v2/chain/base/contract/${NFT_CONTRACT}/nfts/${id}`,
+                { headers }
+              );
+              if (r.ok) {
+                const j = await r.json();
+                const pk = j.nft?.traits?.find(t => t.trait_type === "pieceKey")?.value;
+                if (pk) tokenTraits[id] = pk;
+              }
+            } catch (_) {}
+          }
+        }));
+        if (cancelled) return;
+        try { localStorage.setItem(TRAIT_CACHE, JSON.stringify(tokenTraits)); } catch (_) {}
+
+        const minWei = {};
+        for (const l of listings) {
+          const pk = tokenTraits[l.tokenId];
+          if (!pk) continue;
+          const w = BigInt(l.priceWei);
+          if (minWei[pk] === undefined || w < minWei[pk]) minWei[pk] = w;
+        }
+        const floors = {};
+        for (const [pk, w] of Object.entries(minWei)) floors[pk] = Number(w) / 1e18;
+        if (!cancelled) {
+          setPieceFloors(floors);
+          try { localStorage.setItem(FLOOR_CACHE, JSON.stringify({ at: Date.now(), floors })); } catch (_) {}
+        }
+      } catch (_) {
+        /* swallow — floor is optional */
+      } finally {
+        if (!cancelled) setPieceFloorsLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [refreshKey]);
 
   useEffect(() => {
     (async () => {
@@ -1278,6 +1418,63 @@ export default function StatsPage({ isMobile }) {
                       {blurb}
                     </div>
                   )}
+                  {(() => {
+                    const pk = PIECE_KEY[row.piece_name];
+                    if (!pk) return null;
+                    const floor = pieceFloors[pk];
+                    const floorStr = pieceFloorsLoading
+                      ? "…"
+                      : (typeof floor === "number" ? `${floor.toFixed(4)} Ξ` : "—");
+                    return (
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        borderTop: "1px solid var(--line, #2a2140)",
+                        paddingTop: 10, marginTop: "auto",
+                      }}>
+                        <span style={{
+                          fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                          fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
+                          color: "var(--muted-2, #4d4468)",
+                        }}>
+                          Floor
+                        </span>
+                        <span style={{
+                          fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                          fontSize: 13, fontWeight: 700,
+                          color: typeof floor === "number" ? "var(--ink, #ece7ff)" : "var(--muted, #7a6fa0)",
+                        }}>
+                          {floorStr}
+                        </span>
+                        <a
+                          href={osFilterUrl(pk)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            marginLeft: "auto",
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
+                            fontSize: 11, fontWeight: 700, letterSpacing: "0.5px",
+                            color: "var(--ink, #ece7ff)",
+                            padding: "5px 10px", borderRadius: 999,
+                            border: `1px solid ${hexToRgba(accent, 0.35)}`,
+                            background: hexToRgba(accent, 0.1),
+                            textDecoration: "none",
+                            transition: "all 0.15s",
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.background = hexToRgba(accent, 0.2);
+                            e.currentTarget.style.transform = "translateY(-1px)";
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.background = hexToRgba(accent, 0.1);
+                            e.currentTarget.style.transform = "translateY(0)";
+                          }}
+                        >
+                          OS ↗
+                        </a>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
