@@ -1186,10 +1186,10 @@ export default function StatsPage({ isMobile }) {
               const accent = tc.bg;
               const img = PIECE_IMGS[row.piece_name];
               const blurb = PIECE_BLURBS[row.piece_name];
-              const delta = row.count - row.prior;
-              const pct = row.prior > 0 ? (delta / row.prior) * 100 : null;
-              const isPos = delta > 0, isNeg = delta < 0;
-              const deltaColor = isPos ? "var(--green, #4cd694)" : isNeg ? "var(--red, #ff4d5e)" : "var(--muted, #7a6fa0)";
+              const market = pieceMarket.find(m => m.piece_name === row.piece_name);
+              const supply = market
+                ? Math.max(0, Number(market.total_minted ?? 0) - Number(market.total_burns ?? 0))
+                : null;
               return (
                 <div key={row.piece_name} style={{
                   position: "relative",
@@ -1249,13 +1249,21 @@ export default function StatsPage({ isMobile }) {
                     }}>
                       7d mints
                     </div>
-                    {pct != null && (
+                    {supply != null && (
                       <span style={{
                         marginLeft: "auto",
+                        display: "inline-flex", alignItems: "baseline", gap: 6,
                         fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
-                        fontSize: 11, fontWeight: 700, color: deltaColor,
                       }}>
-                        {isPos ? "▲" : isNeg ? "▼" : "·"} {Math.abs(pct).toFixed(0)}%
+                        <span style={{
+                          fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
+                          color: "var(--muted-2, #4d4468)",
+                        }}>
+                          supply
+                        </span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink, #ece7ff)" }}>
+                          {supply.toLocaleString()}
+                        </span>
                       </span>
                     )}
                   </div>
