@@ -766,43 +766,51 @@ export default function StatsPage({ isMobile }) {
       .slice(0, 5);
   })();
 
-  // ── Top Mints: last completed UTC day in the data. Only treat the
-  // final row as "partial" when it matches today UTC — otherwise it's a
-  // stale-but-complete day we should show as-is.
-  const topMintsLastDay = (() => {
+  // ── Top Mints · Past 7 Days (up until 24h ago) ──────────────────────
+  // Sum the last 7 completed days (drop today's partial row if present)
+  // and compare to the 7 days before that for a week-over-week delta.
+  const topMints7d = (() => {
     const data = mintsByType.data;
-    if (!data?.length) return { rows: [], dayLabel: null, stale: false };
-    const todayUtc = new Date().toISOString().slice(0, 10);
-    // Find the raw ISO day for each pivoted row by looking up the
-    // corresponding raw rows; since mintsByType.data has day already
-    // formatted ("Apr 19"), we compare by index against today. If the
-    // last row's formatted day equals today's "Mon D", drop it as partial.
+    if (!data?.length) return { rows: [], fromLabel: null, toLabel: null, stale: false };
     const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const todayUtc = new Date().toISOString().slice(0, 10);
     const [y, m, d] = todayUtc.split("-");
     const todayLabel = `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}`;
-    const lastIsToday = data[data.length - 1]?.day === todayLabel;
-    const last = lastIsToday ? data[data.length - 2] : data[data.length - 1];
-    const prior = lastIsToday ? data[data.length - 3] : data[data.length - 2];
-    if (!last) return { rows: [], dayLabel: null, stale: false };
-    const rows = Object.keys(last)
-      .filter(k => k !== "day")
-      .map(name => ({
-        piece_name: name,
-        count: Number(last[name] ?? 0),
-        prior: Number(prior?.[name] ?? 0),
-      }))
+    const completed = data[data.length - 1]?.day === todayLabel
+      ? data.slice(0, -1)
+      : data;
+    if (completed.length === 0) return { rows: [], fromLabel: null, toLabel: null, stale: false };
+
+    const last7 = completed.slice(-7);
+    const prev7 = completed.slice(-14, -7);
+
+    const sumByPiece = (rows) => {
+      const totals = {};
+      rows.forEach(r => Object.keys(r).forEach(k => {
+        if (k === "day") return;
+        totals[k] = (totals[k] ?? 0) + Number(r[k] ?? 0);
+      }));
+      return totals;
+    };
+    const curr = sumByPiece(last7);
+    const prior = sumByPiece(prev7);
+
+    const rows = Object.keys(curr)
+      .map(name => ({ piece_name: name, count: curr[name], prior: prior[name] ?? 0 }))
       .filter(r => r.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
-    // Stale if the shown day is more than ~36h behind today UTC
+
+    const fromLabel = last7[0]?.day;
+    const toLabel = last7[last7.length - 1]?.day;
+    const lastMonthIdx = months.indexOf(toLabel?.split(" ")[0]);
+    const lastDayNum = parseInt(toLabel?.split(" ")[1], 10);
     const todayMs = Date.parse(todayUtc + "T00:00:00Z");
-    const lastMonthIdx = months.indexOf(last.day?.split(" ")[0]);
-    const lastDayNum = parseInt(last.day?.split(" ")[1], 10);
     const lastMs = lastMonthIdx >= 0 && lastDayNum
       ? Date.UTC(parseInt(y, 10), lastMonthIdx, lastDayNum)
       : null;
     const stale = lastMs != null && (todayMs - lastMs) > 36 * 3600 * 1000;
-    return { rows, dayLabel: last.day, stale };
+    return { rows, fromLabel, toLabel, stale };
   })();
 
   // ── Piece Market ──────────────────────────────────────────────────────────
@@ -1114,9 +1122,9 @@ export default function StatsPage({ isMobile }) {
             fontSize: 11, letterSpacing: "2.5px", textTransform: "uppercase",
             color: "var(--muted, #7a6fa0)",
           }}>
-            Top Mints {topMintsLastDay.dayLabel ? `· ${topMintsLastDay.dayLabel} UTC` : ""}
+            Top Mints · Past 7 Days {topMints7d.fromLabel && topMints7d.toLabel ? `· ${topMints7d.fromLabel} – ${topMints7d.toLabel} UTC` : ""}
           </div>
-          {topMintsLastDay.stale && (
+          {topMints7d.stale && (
             <div style={{
               fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
               fontSize: 10, letterSpacing: "1px",
@@ -1157,14 +1165,14 @@ export default function StatsPage({ isMobile }) {
               </div>
             ))}
           </div>
-        ) : topMintsLastDay.rows.length === 0 ? (
+        ) : topMints7d.rows.length === 0 ? (
           <div style={{
             background: "var(--card, #140f20)", border: "1px solid var(--line, #2a2140)",
             borderRadius: 16, padding: "28px 20px",
             fontFamily: "var(--font-ui, 'Space Grotesk', sans-serif)",
             fontSize: 13, color: "var(--muted, #7a6fa0)", textAlign: "center",
           }}>
-            No mints recorded for the last full day yet.
+            No mints recorded in the last 7 days yet.
           </div>
         ) : (
           <div style={{
@@ -1172,7 +1180,7 @@ export default function StatsPage({ isMobile }) {
             gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(5, 1fr)",
             gap: 16,
           }}>
-            {topMintsLastDay.rows.map((row, i) => {
+            {topMints7d.rows.map((row, i) => {
               const type = PIECE_TYPE[row.piece_name] ?? "Pawn";
               const tc = TYPE_COLORS[type] ?? { bg: "var(--muted, #7a6fa0)" };
               const accent = tc.bg;
@@ -1239,7 +1247,7 @@ export default function StatsPage({ isMobile }) {
                       fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase",
                       color: "var(--muted-2, #4d4468)",
                     }}>
-                      mints
+                      7d mints
                     </div>
                     {pct != null && (
                       <span style={{
