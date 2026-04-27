@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import html2canvas from "html2canvas";
 import StatsPage from "./StatsPage.jsx";
+import PiecesGuide from "./PiecesGuide.jsx";
 import ShareCard from "./ShareCard.jsx";
 import { captureShareCardBlob } from "./captureShareCard.js";
 import { saveTierList, loadTierList, incrementViewCount, getConsensus, isSupabaseConfigured } from "./supabase.js";
@@ -29,7 +30,7 @@ const MATCHUP_CATS = [
   { id: "weak",   letter: "L", label: "Loses", cssClass: "tier-a" },
 ];
 
-const PIECES = [
+export const PIECES = [
   { id: "rocketman",      name: "Rocketman",      type: "king",   img: "/rocketman.webp" },
   { id: "fission-reactor",name: "Fission Reactor", type: "queen",  img: "/fission.webp" },
   { id: "phase-rook",     name: "Phase Rook",      type: "rook",   img: "/phaserook.webp" },
@@ -66,7 +67,7 @@ const PIECES = [
 
 const PIECE_MAP = new Map(PIECES.map(p => [p.id, p]));
 
-function pieceTypeColor(t) {
+export function pieceTypeColor(t) {
   return ({
     king:   "var(--pink)",
     queen:  "var(--purple)",
@@ -86,7 +87,7 @@ const TYPE_LEGEND = [
   { label: "Pawn",   color: "var(--blue)" },
 ];
 
-function TypeLegend() {
+export function TypeLegend() {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
@@ -587,13 +588,14 @@ export default function PixieTierList() {
     { id: "stats",     label: "Stats" },
     { id: "tierlist",  label: "Tier List" },
     { id: "matchups",  label: "Matchups" },
+    { id: "pieces",    label: "Pieces" },
     { id: "community", label: "Community" },
   ];
 
   return (
     <>
       <div style={{ padding: isMobile ? "20px 16px 60px" : "28px 16px 80px" }}>
-        <div style={{ maxWidth: activeTab === "stats" ? 1280 : 900, margin: "0 auto" }}>
+        <div style={{ maxWidth: activeTab === "stats" ? 1280 : activeTab === "pieces" ? 1200 : 900, margin: "0 auto" }}>
 
           {/* Logo + nav */}
           <div style={{ textAlign: "center", marginBottom: 24 }}>
@@ -943,6 +945,9 @@ export default function PixieTierList() {
 
           {/* ── STATS TAB ── */}
           {activeTab === "stats" && <StatsPage isMobile={isMobile} />}
+
+          {/* ── PIECES TAB ── */}
+          {activeTab === "pieces" && <PiecesGuide isMobile={isMobile} />}
 
           {/* ── COMMUNITY TAB ── */}
           {activeTab === "community" && (
